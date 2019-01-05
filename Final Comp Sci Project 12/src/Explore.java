@@ -1,13 +1,25 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.border.EmptyBorder;
 
 class Explore extends JFrame{
 	private static double x, y; 
@@ -15,81 +27,95 @@ class Explore extends JFrame{
     private static SolarSystem solarSystem;
     
 	Explore(){
-		super("My Game");  
-	    // Set the frame to full screen 
+		super("Explore");  
 	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-	   // this.setUndecorated(true);  //Set to true to remove title bar
-	   //frame.setResizable(false);
-
-
-	    
-	    //Set up the game panel (where we put our graphics)
+	    this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.X_AXIS));
+	    this.setUndecorated(true);  
+	    this.setResizable(false);
+		    
+	    //Set up frame 
 	    solarSystem = new SolarSystem();
 	    this.add(new SolarSystem());
 	    
+	    //-------control bar------
+	    JPanel controlBar = new JPanel();
+	    //controlBar.setBorder(new EmptyBorder(200, 20, 300, 50));
+	    controlBar.setBackground(Color.red);
+	   // controlBar.setBackground(new Color(255,255,255));
+	    controlBar.setLayout(new BoxLayout(controlBar,  BoxLayout.Y_AXIS));
+
+	    //control label
+	    BufferedImage controls = null;
+		try {controls = ImageIO.read(new File("images/controls.png"));} catch (IOException e) {}
+	    JLabel controlLabel = new JLabel(new ImageIcon(controls));
+	    controlBar.add(controlLabel);
+	    
+	    //scroll bars
+	    controlBar.add(new JScrollBar(JScrollBar.HORIZONTAL));
+
+	    
+	    
+	    this.add(controlBar);
+	    //--------------------------
+	    
+	    //listeners
 	    MyKeyListener keyListener = new MyKeyListener();
 	    this.addKeyListener(keyListener);
-
 	    MyMouseListener mouseListener = new MyMouseListener();
 	    this.addMouseListener(mouseListener);
 
-	    this.requestFocusInWindow(); //make sure the frame has focus   
-	    
+	    this.requestFocusInWindow(); 	    
 	    this.setVisible(true);
 	  
-	    //Start the game loop in a separate thread
-	    Thread t = new Thread(new Runnable() { public void run() { run(); }}); //start the gameLoop 
+	    //Start the loop
+	    Thread t = new Thread(new Runnable() { public void run() { run(); }}); 
 	    t.start();
 	}
-	//the main gameloop - this is where the game state is updated
-	  public void run() { 
-	    
+	//loop
+	  public void run() { 	    
 	    while(true){
-	      this.x = (Math.random()*1024);  //update coords
-	      this.y = (Math.random()*768);
-	      try{ Thread.sleep(500);} catch (Exception exc){}  //delay
+	      //update
+	    	
+	    	
+	      try{ Thread.sleep(500);} catch (Exception exc){}  
 	      this.repaint();
 	    }    
 	  }
 	 /** --------- INNER CLASSES ------------- **/
-	  // Inner class for the the game area - This is where all the drawing of the screen occurs
+	  //solar system panel
 	  private class SolarSystem extends JPanel {
+		SolarSystem() {
+		      this.setBackground(Color.black);
+		      Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		      this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
+		      this.setMinimumSize(this.getPreferredSize());
+		      this.setMaximumSize(this.getPreferredSize());
+		}
 	    public void paintComponent(Graphics g) {   
-	       super.paintComponent(g); //required
-	       setDoubleBuffered(true); 
-	       g.setColor(Color.BLUE); //There are many graphics commands that Java can use
-	       g.fillRect((int)x, (int)y, 50, 50); //notice the x,y variables that we control from our animate method      
+	       super.paintComponent(g); 
+	       setDoubleBuffered(true);  
 	      
 	    }
 	  }
 	  
-	  // -----------  Inner class for the keyboard listener - this detects key presses and runs the corresponding code
-	    private class MyKeyListener implements KeyListener {
+	  //key listener
+	   private class MyKeyListener implements KeyListener {
 	  
 	      public void keyTyped(KeyEvent e) {  
 	      }
 
 	      public void keyPressed(KeyEvent e) {
-	        //System.out.println("keyPressed="+KeyEvent.getKeyText(e.getKeyCode()));
-	       
-	        if (KeyEvent.getKeyText(e.getKeyCode()).equals("D")) {  //If 'D' is pressed
-	          System.out.println("YIKES D KEY!");
-	        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {  //If ESC is pressed
-	          System.out.println("YIKES ESCAPE KEY!"); //close frame & quit
-	        } 
 	      }   
 	      
 	      public void keyReleased(KeyEvent e) {
 	      }
-	    } //end of keyboard listener
+	    } 
 	  
-	  // -----------  Inner class for the keyboard listener - This detects mouse movement & clicks and runs the corresponding methods 
+	   //mouse listener
 	    private class MyMouseListener implements MouseListener {
 	   
 	      public void mouseClicked(MouseEvent e) {
-	        System.out.println("Mouse Clicked");
-	        System.out.println("X:"+e.getX() + " y:"+e.getY());
 	      }
 
 	      public void mousePressed(MouseEvent e) {
