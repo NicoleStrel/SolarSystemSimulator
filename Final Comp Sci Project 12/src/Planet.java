@@ -1,12 +1,12 @@
 class Planet extends SpaceObject{
-	private double distanceFromSun;
-	private double daysRotateAroundSun;
+	private double distanceFromSun; //pixels
+	private double speedRotateAroundSun; //pixels/s
 	
 	Planet(){}
-	Planet(String name, double daysRotates, double angleOfTilt, double distanceFromSun, double daysRotateAroundSun){
-		super(name, daysRotates, angleOfTilt);
+	Planet(String name, double daysRotates, double angleOfTilt, String directionRotates,double radius, double distanceFromSun, double speedRotateAroundSun){
+		super(name, daysRotates, angleOfTilt, directionRotates, radius);
 		this.distanceFromSun=distanceFromSun;
-		this.daysRotateAroundSun=daysRotateAroundSun;		
+		this.speedRotateAroundSun=speedRotateAroundSun;		
 	}
 	public void rotateAroundOrbit(double distance, int days) {
 		
@@ -18,9 +18,9 @@ class Planet extends SpaceObject{
 		this.distanceFromSun=distance;
 	}
 	public double getDaysRotateSun() {
-		return this.daysRotateAroundSun;	
+		return this.speedRotateAroundSun;	
 	}
-	public void setDaysRotateSu(double daysRotates) {
-		this.daysRotateAroundSun=daysRotates;
+	public void setDaysRotateSu(double speedRotates) {
+		this.speedRotateAroundSun=speedRotates;
 	}
 }
