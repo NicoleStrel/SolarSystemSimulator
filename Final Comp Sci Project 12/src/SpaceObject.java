@@ -1,16 +1,21 @@
+import java.awt.Color;
+
 abstract class SpaceObject{
 	private double axialTilt; //degreees
 	private double speedRotates; //pixels/s
 	private String directionRotates;
 	private double radius;
+	private Color color;
 	private String name;
+	
 	SpaceObject(){}
-	SpaceObject(String name, double speedRotates, double axialTilt, String directionRotates, double radius){
+	SpaceObject(String name, double speedRotates, double axialTilt, String directionRotates, double radius, Color color){
 		this.name=name;
 		this.speedRotates=speedRotates;
 		this.axialTilt=axialTilt;
 		this.directionRotates= directionRotates;
 		this.radius=radius;
+		this.color=color;
 	}
 	public void roateAroundAxis() {
 		
@@ -41,5 +46,17 @@ abstract class SpaceObject{
 	}
 	public void setDirection(String directionRotates) {
 		this.directionRotates=directionRotates;
+	}
+	public double getRadius() {
+		return this.radius;
+	}
+	public void setRadius(double radius) {
+		this.radius=radius;
+	}
+	public Color getColor() {
+		return this.color;
+	}
+	public void setColor(Color color) {
+		this.color=color;
 	}
 }
