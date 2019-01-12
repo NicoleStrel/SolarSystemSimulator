@@ -196,7 +196,7 @@ class Explore extends JFrame{
 		 while (itr.hasNext()) {
 			 SpaceObject object = (SpaceObject)itr.next();
 			 if (object instanceof Planet){
-				 double speed=((Planet)object).getSpeedRotateSun()/ratioS;
+				 double speed=((Planet)object).getSpeedRotateSun()/ratioS ;
 				 double radian=TIME*speed+((Planet) object).getOrbitalMovement().getRadian();			 
 				 ((Planet) object).getOrbitalMovement().setRadian(radian);			 			 
 			 }
