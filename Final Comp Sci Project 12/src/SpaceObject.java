@@ -1,14 +1,19 @@
 import java.awt.Color;
+import java.awt.Graphics;
+
+import javax.swing.JFrame;
 
 abstract class SpaceObject{
 	private double axialTilt; //degreees
 	private double speedRotates; //pixels/s
 	private String directionRotates;
-	private double radius;
-	private Color color;
+	protected double radius;
+	protected Color color;
 	private String name;
 	
-	SpaceObject(){}
+	SpaceObject(double radius){
+		this.radius=radius;
+	}
 	SpaceObject(String name, double speedRotates, double axialTilt, String directionRotates, double radius, Color color){
 		this.name=name;
 		this.speedRotates=speedRotates;

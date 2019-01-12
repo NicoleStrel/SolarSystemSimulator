@@ -1,18 +1,18 @@
 import java.awt.Color;
+import java.awt.Graphics;
+
+import javax.swing.JFrame;
 
 class Planet extends SpaceObject{
-	private double distanceFromSun; //pixels
+	protected double distanceFromSun; //pixels
 	private double speedRotateAroundSun; //pixels/s
-	private int orbitalX; //movement relative to center of circle
-	private int orbitalY;
+	private OrbitalMove orbitalMovement;
 	
-	Planet(){}
-	Planet(String name, double daysRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, int orbitalX, int orbitalY){
+	Planet(String name, double daysRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, OrbitalMove orbitalMovement){
 		super(name, daysRotates, angleOfTilt, directionRotates, radius, color);
 		this.distanceFromSun=distanceFromSun;
 		this.speedRotateAroundSun=speedRotateAroundSun;		
-		this.orbitalX=orbitalX;
-		this.orbitalY=orbitalY;
+		this.orbitalMovement=orbitalMovement;
 	}
 	public void rotateAroundOrbit(double distance, int days) {
 		
@@ -29,16 +29,26 @@ class Planet extends SpaceObject{
 	public void setSpeedRotateSun(double speedRotates) {
 		this.speedRotateAroundSun=speedRotates;
 	}
-	public int getOrbitalX() {
-		return this.orbitalX;
+	public OrbitalMove getOrbitalMovement() {
+		return this.orbitalMovement;
 	}
-	public void setOrbitalX(int orbitalX) {
-		this.orbitalX=orbitalX;
+	public void setOrbitalX(OrbitalMove orbitalMovement) {
+		this.orbitalMovement=orbitalMovement;
 	}
-	public int getOrbitalY() {
-		return this.orbitalY;
+	public void drawPlanet(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY, double ratioD, double ratioP) {
+		 int startingPoint=(int)(centerX-(distanceFromSun/ratioD));
+		 int radius2=(int)(radius/ratioP);
+	     g.setColor(color);
+		 g.fillOval(startingPoint-radius2*2+backgroundX+orbitalMovement.getOrbitalX(),centerY-radius2+backgroundY+orbitalMovement.getOrbitalY(),radius2*2, radius2*2);
+		
 	}
-	public void setOrbitalY(int orbitalY) {
-		this.orbitalY=orbitalY;
+	public void drawOrbit(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY, double ratioD,
+		double ratioP, int sunRadius) {
+		int distance=(int)(distanceFromSun/ratioD);
+		int planetRadius=(int)(radius/ratioP);
+		int radius2=distance+sunRadius+planetRadius;
+	    g.setColor(Color.white);
+	    g.drawOval(centerX+backgroundX-distance-planetRadius,centerY+backgroundY-radius2, radius2*2, radius2*2); 
+		
 	}
 }

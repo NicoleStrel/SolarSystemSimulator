@@ -11,6 +11,11 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,6 +26,7 @@ import javax.swing.border.EmptyBorder;
 
 class MainMenu extends JFrame{
 	private JFrame menu;
+	private Clip music;
 	MainMenu() {
 		super("Main Menu");
 	    this.menu = this; 
@@ -31,36 +37,51 @@ class MainMenu extends JFrame{
 	    this.setUndecorated(true);
 	    setBackground(new Color(0,0,0,0));
 	    
-	    //Create a MainMenuPanel
+	    //------MainMenuPanel-----
 	    JPanel mainMenuPanel = new DecoratedPanel();
 	    mainMenuPanel.setLayout(new BorderLayout());
 	    mainMenuPanel.setBorder(new EmptyBorder(0, 0, 85, 0));
 	    
-	    //start button
-	    ImageIcon explore =new ImageIcon("images/explore.png");
+	    //-----start button------
+	    ImageIcon explore =new ImageIcon("images/explore.png");          //make boundries for this
 	    JButton startButton = new JButton(explore);
 	    startButton.setBackground(new Color(0, 0, 0, 0));
 	    startButton.setBorder(BorderFactory.createEmptyBorder());
 	    startButton.setFocusPainted(false);
 	    startButton.setRolloverIcon(new ImageIcon("images/blastoff.png"));
 	    startButton.addActionListener(new StartButtonListener());
+	    mainMenuPanel.add(startButton,BorderLayout.CENTER);
 	    
-	    //logo
+	    //--------logo----------
 	    BufferedImage logo = null;
 		try {logo = ImageIO.read(new File("images/Solar Orbiter Logo.png"));} catch (IOException e) {}
 	    JLabel logoLabel = new JLabel(new ImageIcon(logo));
+	    mainMenuPanel.add (logoLabel, BorderLayout.NORTH);
 	    
-	    //quit button
+	    //--------quit button------
 	    ImageIcon quit =new ImageIcon("images/quit.png");
 	    JButton quitButton = new JButton(quit);
 	    quitButton.setBackground(new Color(0, 0, 0, 0));
 	    quitButton.setBorder(BorderFactory.createEmptyBorder());
 	    quitButton.setFocusPainted(false);
-	    quitButton.addActionListener(new QuitButtonListener());
-	    
-	    mainMenuPanel.add (logoLabel, BorderLayout.NORTH);
+	    quitButton.addActionListener(new QuitButtonListener());	   
 	    mainMenuPanel.add(quitButton, BorderLayout.SOUTH);
-	    mainMenuPanel.add(startButton,BorderLayout.CENTER);
+        
+	    //--------audio--------
+	    File musicFile = new File("audio/intro.wav");
+	    
+	    try {
+	    	AudioInputStream audioIn = AudioSystem.getAudioInputStream(musicFile);
+	    	music = AudioSystem.getClip();
+	    	music.open(audioIn);
+	    	music.loop(Clip.LOOP_CONTINUOUSLY);	    	
+	    } catch (UnsupportedAudioFileException e) {
+	         e.printStackTrace();
+	    } catch (IOException e) {
+	         e.printStackTrace();
+	    } catch (LineUnavailableException e) {
+	         e.printStackTrace();
+	    }	    
 	    
 	    this.add(mainMenuPanel);	    
 	    this.setVisible(true);
@@ -68,6 +89,7 @@ class MainMenu extends JFrame{
 	 //inner class
 	 class StartButtonListener implements ActionListener{ 
 	    public void actionPerformed(ActionEvent event) {  
+	      music.stop();
 	      menu.dispose();
 	      new Explore();
 
