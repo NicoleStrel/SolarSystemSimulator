@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 class OrbitalMove{
 	private int orbitalX; //movement relative to center of circle
 	private int orbitalY;
@@ -24,6 +26,12 @@ class OrbitalMove{
 	}
 	public void setRadian(double radian) {
 		this.radian=radian;
+	}
+	public void updateRadialMovement(Planet planet, int multiplier, double elapsedTime) {
+		double speed=planet.getSpeedRotateSun()*multiplier;
+		double radian2=elapsedTime*speed+radian;	
+		radian=radian2;		 			 
+
 	}
 	
 }

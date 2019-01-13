@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Iterator;
 
 import javax.swing.JFrame;
 
@@ -50,4 +51,16 @@ class Planet extends SpaceObject{
 	    g.drawOval(centerX+backgroundX-distance-planetRadius,centerY+backgroundY-radius2, radius2*2, radius2*2); 
 		
 	}
+	 public void moveOrbital(int divisor, double sunRadius) {
+		 double radius2=(distanceFromSun+sunRadius+radius)/divisor;		
+		 double radian=orbitalMovement.getRadian();
+		 
+		 int newX=(int)(radius2-radius2*Math.cos(radian));	
+		 int newY=(int)(radius2*Math.sin(radian));
+		 
+		 orbitalMovement.setOrbitalX(newX);
+		 orbitalMovement.setOrbitalY(newY);		 
+			 
+		 
+	 }
 }

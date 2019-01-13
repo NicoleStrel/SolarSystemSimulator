@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,16 +53,14 @@ class Explore extends JFrame{
     private static SolarSystem solarSystem;
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private ArrayList<SpaceObject> spaceObjects= new ArrayList<SpaceObject>();
-    private double ratioD=Math.pow(10,12)*2; 
-    private double ratioP=Math.pow(10, 8)*7;     
-    //private final double DP_RATIO=ratioD/ratioP;
-    private double ratioS=Math.pow(10, 9)*2;
-    private static final double TIME=0.2; //in seconds 
+    private static final double ratioD=Math.pow(10,12)*2; 
+    private static final double  ratioP=Math.pow(10, 8)*7;     
+    private static final double ratioS=Math.pow(10, 9)*2;
     private int backgroundX=0;
     private int backgroundY=0;
-    private int centerX=(int)(screenSize.getWidth()/2);	     
-    private int centerY=(int)(screenSize.getHeight()/2)-100;	
     private boolean selected;
+    private boolean on=true;
+    private Clip music;
     
     /** Explore constructor*******************************************
      * contstructor to set up the properties of the Jframe and its components
@@ -77,7 +76,7 @@ class Explore extends JFrame{
 	   
 	    //------solor system panel-------
 	    generateSpaceObjects();
-	    updateRadialMovement(1);
+	    //updateRadialMovement(1);
 	    solarSystem = new SolarSystem(screenSize);
 	    this.add(solarSystem);
 	    
@@ -122,7 +121,7 @@ class Explore extends JFrame{
 	    JScrollBar speedControl=new JScrollBar(JScrollBar.HORIZONTAL, 1, 10, 1, 100);
 	    speedAdjust=new SpeedAdjustmentListener(1,speedControl);
 	    speedControl.addAdjustmentListener(speedAdjust);    
-	    speedControl.setValue(1);                                                                   //fix starting value for scroll bars
+	    speedControl.setValue(1);                                                           
 	    controlBar.add(speedControl);
 	    
 	    //---orbits checkbox----
@@ -139,7 +138,7 @@ class Explore extends JFrame{
 	    
 	    try {
 	    	AudioInputStream audioIn = AudioSystem.getAudioInputStream(musicFile);
-	    	Clip music = AudioSystem.getClip();
+	    	music = AudioSystem.getClip();
 	    	music.open(audioIn);
 	    	music.loop(Clip.LOOP_CONTINUOUSLY);	    	
 	    } catch (UnsupportedAudioFileException e) {
@@ -162,55 +161,7 @@ class Explore extends JFrame{
 	    this.requestFocusInWindow(); 
 	    this.pack();
 	    this.setVisible(true);
-
-	    
-	    //Start the loop
-	    Thread t = new Thread(new Runnable() {
-		    	public void run() { 
-		    		while(true){
-		    		      //update  
-		    		      try{ Thread.sleep(200);} catch (Exception exc){}  
-		    		      moveOrbital(spaceObjects.get(8).getRadius());
-		    		      solarSystem.repaint();
-		    			  updateRadialMovement(speedAdjust.getPrevious());
-		    		    }    
-		    	}
-	    	}); 
-	    t.start();
 	}
-	/** updateRadialMovement *******************************************
-     * updates the radian value that the planets move by
-     */
-	private void updateRadialMovement(int multiplier) {
-		 Iterator<SpaceObject> itr=spaceObjects.iterator();
-		 while (itr.hasNext()) {
-			 SpaceObject object = (SpaceObject)itr.next();
-			 if (object instanceof Planet){
-				 double speed=((Planet)object).getSpeedRotateSun()*multiplier;
-				 double radian=TIME*speed+((Planet) object).getOrbitalMovement().getRadian();	 
-				 ((Planet) object).getOrbitalMovement().setRadian(radian);			 			 
-			 }
-		 }
-	}
-	/** moveOrbital *******************************************
-     * moves all the planets counter-clockwise around the sun
-     */	
-	 private void moveOrbital(double sunRadius) {
-		 Iterator<SpaceObject> itr=spaceObjects.iterator();
-		 while (itr.hasNext()) {
-			 SpaceObject object = (SpaceObject)itr.next();
-			 if (object instanceof Planet && sizeAdjust !=null){
-				 double radius=(((Planet)object).getDistanceFromSun()+sunRadius+object.getRadius())/sizeAdjust.getPrevious();		
-				 double radian=((Planet)object).getOrbitalMovement().getRadian();
-				 
-				 int newX=(int)(radius-radius*Math.cos(radian));	
-				 int newY=(int)(radius*Math.sin(radian));
-				 
-				 ((Planet)object).getOrbitalMovement().setOrbitalX(newX);
-				 ((Planet)object).getOrbitalMovement().setOrbitalY(newY);		 
-			 }
-		 }
-	 }
 	 /** generateSpaceObjects *******************************************
 	     * adds all of the space objects' data and their converted values in pixels
 	     */
@@ -235,21 +186,44 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	  private class SolarSystem extends JPanel {
+		private int centerX=(int)(screenSize.getWidth()/2);	     
+		private int centerY=(int)(screenSize.getHeight()/2)-100;	
+		private Clock clock;
+		FrameRate frameRate;
+		
 		SolarSystem(Dimension screenSize) {
 		      this.setBackground(Color.black);	 
 		      this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
 		      this.setMinimumSize(this.getPreferredSize());
 		      this.setMaximumSize(this.getPreferredSize());
+		      clock=new Clock();
+		      frameRate=new FrameRate();
 		}
 		/** paintComponent *******************************************
 	     * draws all the nessasary componets on the graphics panel(Solar System)
 	     */
-	    public void paintComponent(Graphics g) {    //will implement drawable   //TO DO
+	    public void paintComponent(Graphics g) {   
 	    	 super.paintComponent(g); 
-	       	 setDoubleBuffered(true);    
-	       	 g.setColor(Color.white);
-		   	 g.drawString("Note: Planet sizes are inflated (not exactly to scale)", 20, 30);   
-		   	 
+	       	 setDoubleBuffered(true); 
+	       	 
+	       	 
+	       	 //update
+	 		 clock.update();
+			 frameRate.update();
+			
+			 //stars twinkle
+			 int count=10;        //class for stars and draw them based on x and y, update evrey 10 count
+			 int x=0, y=0;
+			 if (count==10) {
+				 final int NUM_STARS=1000;
+				 for (int i=0; i<NUM_STARS; i++) {
+					 x=(int)((screenSize.getHeight()-300-1)*Math.random()+1);
+					 y=(int)((screenSize.getWidth()-300-1)*Math.random()+1);
+					 count=0;
+				 }
+			 }
+			 g.drawOval(x, y, 5,5);
+			 
 		     //draw solar system
 		   	 Iterator<SpaceObject> itr=spaceObjects.iterator();
 			 while (itr.hasNext()) {
@@ -264,9 +238,32 @@ class Explore extends JFrame{
 		    			   ((Planet)object).drawOrbit(g, centerX,centerY, backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
 		    		   }
 		    		   ((Planet)object).drawPlanet(g, centerX,centerY, backgroundX, backgroundY,sizeAdjust.getPrevious());
+		    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
+		    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
 		    	   }
 			   }
-			 } 
+			 }
+			 
+	       	 //extra stuff
+	       	 g.setColor(Color.white);
+		   	 g.drawString("Note: Planet sizes are inflated (not exactly to scale)", 20, 30);  
+		   	 frameRate.draw(g,20,45);
+		   	 BufferedImage arrowKeys = null;
+		     try {arrowKeys = ImageIO.read(new File("images/arrowKeys.png"));} catch (IOException e) {}
+		     g.drawImage(arrowKeys,15, (int)screenSize.getHeight()-100, null);
+		     g.drawString("View Controls: ", 20, (int)screenSize.getHeight()-90);
+		     BufferedImage soundOn = null;
+		     try {soundOn = ImageIO.read(new File("images/volumeOn.png"));} catch (IOException e) {}
+		     BufferedImage soundOff = null;
+		     try {soundOff = ImageIO.read(new File("images/volumeOff.png"));} catch (IOException e) {}
+		     if (on) {
+		    	g.drawImage(soundOn, (int)screenSize.getWidth()-330, 5, null);
+		     }
+		     else {
+		    	 g.drawImage(soundOff, (int)screenSize.getWidth()-330, 5, null);
+		     }
+		     count++;
+		     repaint();
 	    }
 	  }
 	  /** 
@@ -401,8 +398,16 @@ class Explore extends JFrame{
 		   * January 2019
 		   */
 	    private class MyMouseListener implements MouseListener {
-	   
+	     Rectangle sound=new Rectangle((int)screenSize.getWidth()-340,5, 30, 30);
 	      public void mouseClicked(MouseEvent e) {
+	    	  if (sound.contains(e.getX(),e.getY()) && on==true){
+	    		  on=false;
+	    		  music.stop();
+	    	  }
+	    	  else if (sound.contains(e.getX(),e.getY()) && on==false){
+	    		  on=true;
+	    		  music.start();
+	    	  }
 	      }
 
 	      public void mousePressed(MouseEvent e) {
