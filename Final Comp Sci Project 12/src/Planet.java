@@ -8,8 +8,8 @@ class Planet extends SpaceObject{
 	private double speedRotateAroundSun; //pixels/s
 	private OrbitalMove orbitalMovement;
 	
-	Planet(String name, double daysRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, OrbitalMove orbitalMovement){
-		super(name, daysRotates, angleOfTilt, directionRotates, radius, color);
+	Planet(String name, double speedRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, OrbitalMove orbitalMovement){
+		super(name, speedRotates, angleOfTilt, directionRotates, radius, color);
 		this.distanceFromSun=distanceFromSun;
 		this.speedRotateAroundSun=speedRotateAroundSun;		
 		this.orbitalMovement=orbitalMovement;
@@ -35,18 +35,17 @@ class Planet extends SpaceObject{
 	public void setOrbitalX(OrbitalMove orbitalMovement) {
 		this.orbitalMovement=orbitalMovement;
 	}
-	public void drawPlanet(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY, double ratioD, double ratioP) {
-		 int startingPoint=(int)(centerX-(distanceFromSun/ratioD));
-		 int radius2=(int)(radius/ratioP);
+	public void drawPlanet(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY, int divisor) {
+		 int startingPoint=(int)(centerX-(distanceFromSun/divisor));
+		 int radius2=(int)(radius/divisor);
 	     g.setColor(color);
 		 g.fillOval(startingPoint-radius2*2+backgroundX+orbitalMovement.getOrbitalX(),centerY-radius2+backgroundY+orbitalMovement.getOrbitalY(),radius2*2, radius2*2);
 		
 	}
-	public void drawOrbit(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY, double ratioD,
-		double ratioP, int sunRadius) {
-		int distance=(int)(distanceFromSun/ratioD);
-		int planetRadius=(int)(radius/ratioP);
-		int radius2=distance+sunRadius+planetRadius;
+	public void drawOrbit(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY,int divisor, int sunRadius) {
+		int distance=(int)(distanceFromSun/divisor);
+		int planetRadius=(int)(radius/divisor);
+		int radius2=distance+sunRadius/divisor+planetRadius;
 	    g.setColor(Color.white);
 	    g.drawOval(centerX+backgroundX-distance-planetRadius,centerY+backgroundY-radius2, radius2*2, radius2*2); 
 		
