@@ -300,9 +300,8 @@ class Explore extends JFrame{
 		 public void adjustmentValueChanged(AdjustmentEvent e) {		
 			 int type = e.getAdjustmentType();			 
 			 if (type==AdjustmentEvent.TRACK) {
-				 int currentValue = sizeControl.getValue() + sizeControl.getVisibleAmount();
+				 int currentValue = sizeControl.getValue();
 				 previous=currentValue;
-				 solarSystem.repaint();
 			 }		
 		}
 	  }
@@ -339,7 +338,7 @@ class Explore extends JFrame{
 		  public void adjustmentValueChanged(AdjustmentEvent e) {
 			 int type = e.getAdjustmentType();		
 			 if (type==AdjustmentEvent.TRACK) {
-				 int currentValue = speedControl.getValue() + speedControl.getVisibleAmount();
+				 int currentValue = speedControl.getValue();
 				 previous=currentValue;
 			 }
 	
