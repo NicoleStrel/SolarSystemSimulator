@@ -8,12 +8,14 @@ class Planet extends SpaceObject{
 	protected double distanceFromSun; //pixels
 	private double speedRotateAroundSun; //pixels/s
 	private OrbitalMove orbitalMovement;
+	private Sphere sphere;
 	
 	Planet(String name, double speedRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, OrbitalMove orbitalMovement){
 		super(name, speedRotates, angleOfTilt, directionRotates, radius, color);
 		this.distanceFromSun=distanceFromSun;
 		this.speedRotateAroundSun=speedRotateAroundSun;		
 		this.orbitalMovement=orbitalMovement;
+		this.sphere=new Sphere(radius);
 	}
 	public void rotateAroundOrbit(double distance, int days) {
 		
@@ -60,7 +62,8 @@ class Planet extends SpaceObject{
 		 
 		 orbitalMovement.setOrbitalX(newX);
 		 orbitalMovement.setOrbitalY(newY);		 
-			 
-		 
 	 }
+	 public Sphere getSphere() {
+			return this.sphere;
+		}
 }

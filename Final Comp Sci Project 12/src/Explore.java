@@ -61,6 +61,7 @@ class Explore extends JFrame{
     private boolean selected;
     private boolean on=true;
     private Clip music;
+    private boolean dimensional=true;
     
     /** Explore constructor*******************************************
      * contstructor to set up the properties of the Jframe and its components
@@ -206,7 +207,6 @@ class Explore extends JFrame{
 	    	 super.paintComponent(g); 
 	       	 setDoubleBuffered(true); 
 	       	 
-	       	 
 	       	 //update
 	 		 clock.update();
 			 frameRate.update();
@@ -224,20 +224,32 @@ class Explore extends JFrame{
 			 }
 			 g.drawOval(x, y, 5,5);
 			 
+
 		     //draw solar system
 		   	 Iterator<SpaceObject> itr=spaceObjects.iterator();
 			 while (itr.hasNext()) {
 			   SpaceObject object = (SpaceObject)itr.next();   
-			   
 			   if (sizeAdjust!=null) {
 		    	   if (object instanceof Sun) {
-		    		   ((Sun)object). drawSun(g,centerX, centerY, backgroundX, backgroundY,sizeAdjust.getPrevious());	   
+		  			 if (dimensional) {
+		  				 ((Sun)object).getSphere().createIcosahedron();
+		  				 ((Sun)object).getSphere().drawSphere(g, ((Sun)object).getColor());
+					 }
+		  			 else {
+		    		   ((Sun)object). drawSun(g,centerX, centerY, backgroundX, backgroundY,sizeAdjust.getPrevious());	
+		  			 }
 		    	   }		    	   
 		    	   else  {		    		   
 		    		   if (selected) {
 		    			   ((Planet)object).drawOrbit(g, centerX,centerY, backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
 		    		   }
+		    		   if (dimensional) {
+		    			   ((Planet)object).getSphere().createIcosahedron();
+			  			   ((Planet)object).getSphere().drawSphere(g, ((Planet)object).getColor());
+						}
+		    		   else {
 		    		   ((Planet)object).drawPlanet(g, centerX,centerY, backgroundX, backgroundY,sizeAdjust.getPrevious());
+		    		   }
 		    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
 		    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
 		    	   }
