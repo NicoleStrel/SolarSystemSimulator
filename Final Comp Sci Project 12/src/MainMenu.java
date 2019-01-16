@@ -31,7 +31,7 @@ import javax.swing.border.EmptyBorder;
 class MainMenu extends JFrame{
 	private JFrame menu;
 	private Clip music;
-	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	public  static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	MainMenu() {
 		super("Main Menu");
 	    this.menu = this; 

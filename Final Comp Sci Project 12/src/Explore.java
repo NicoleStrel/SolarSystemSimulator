@@ -17,9 +17,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
@@ -51,17 +53,22 @@ class Explore extends JFrame{
 	private SpeedAdjustmentListener speedAdjust;	
 	private SizeAdjustmentListener sizeAdjust;
     private static SolarSystem solarSystem;
-    private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    private static PlanetDescription planetDesc;
+    public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private ArrayList<SpaceObject> spaceObjects= new ArrayList<SpaceObject>();
     private static final double ratioD=Math.pow(10,12)*2; 
     private static final double  ratioP=Math.pow(10, 8)*7;     
     private static final double ratioS=Math.pow(10, 9)*2;
     private int backgroundX=0;
     private int backgroundY=0;
-    private boolean selected;
+    private boolean orbits;
     private boolean on=true;
     private Clip music;
-    private boolean dimensional=true;
+    private boolean dimensional=false;
+    private boolean label;
+    private boolean  texture;
+    private boolean off=true;
+    private String chosen;
     
     /** Explore constructor*******************************************
      * contstructor to set up the properties of the Jframe and its components
@@ -75,10 +82,12 @@ class Explore extends JFrame{
 	    this.setUndecorated(true);  
 	    this.setResizable(false);
 	   
-	    //------solor system panel-------
-	    generateSpaceObjects();
-	    //updateRadialMovement(1);
-	    solarSystem = new SolarSystem(screenSize);
+	    //------solar system panel-------
+	    try {readPlanetStats();} catch (FileNotFoundException e) {
+			  System.out.print("hi");
+	    }
+	    //generateSpaceObjects();
+	    solarSystem = new SolarSystem();
 	    this.add(solarSystem);
 	    
 	    //-------control bar panel------
@@ -134,6 +143,27 @@ class Explore extends JFrame{
 	    orbitCheck.addActionListener(new OrbitsCheckListener());
 	    controlBar.add(orbitCheck);
 	    
+	    //---label checkbox----
+	    JCheckBox labelCheck=new JCheckBox("Show planet labels: ", false);
+	    labelCheck.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    labelCheck.setHorizontalTextPosition(SwingConstants.LEFT);
+	    labelCheck.setFocusable(false);
+	    labelCheck.addActionListener(new LabelCheckListener());
+	    controlBar.add(labelCheck);
+	    
+	    //---texture checkbox----
+	    JCheckBox textureCheck=new JCheckBox("Show planet textures: ", false);
+	    textureCheck.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    textureCheck.setHorizontalTextPosition(SwingConstants.LEFT);
+	    textureCheck.setFocusable(false);
+	    textureCheck.addActionListener(new TextureCheckListener());
+	    controlBar.add(textureCheck);
+	    controlBar.add(Box.createRigidArea(new Dimension(0,95)));
+	    
+	    //---graphics panel-----
+	    planetDesc = new PlanetDescription();
+	    controlBar.add(planetDesc);
+	    
 	    //---------audio-------------
 	    File musicFile = new File("audio/explore.wav");
 	    
@@ -163,9 +193,7 @@ class Explore extends JFrame{
 	    this.pack();
 	    this.setVisible(true);
 	}
-	 /** generateSpaceObjects *******************************************
-	     * adds all of the space objects' data and their converted values in pixels
-	     */
+     /*
 	  private void generateSpaceObjects() {     //implement read from file
 		  //add converted data
 		 this.spaceObjects.add(new Planet("Jupiter", 47856770.73097/ratioS, 3.13,"CW",264233880111.9/ratioP, new Color(234,192,134),2.942399274322*(Math.pow(10,15))/ratioD,49399047.54706/ratioS, new OrbitalMove(0,0)));
@@ -179,6 +207,52 @@ class Explore extends JFrame{
 		 this.spaceObjects.add(new Sun("Sun", 112337373.1953/ratioS, 7.25, "CW", 2.628724771336*(Math.pow(10, 12))/ratioP, Color.yellow));
 		  
 	  }
+	  */
+	  private void readPlanetStats() throws FileNotFoundException {
+		  File fileIn = new File("planetStats.txt");
+		  Scanner textIn = new Scanner(fileIn); 
+		  
+		  while (textIn.hasNext()) {
+			  String line= textIn.nextLine();
+			  String [] data= line.split(" ");
+			  //planets
+			  if (!(data[0].equals("Sun"))){
+				  double speed=convertPixels(Double.parseDouble(data[4])*0.000277778)/ratioS;
+				  double angle= Double.parseDouble(data[6]);
+				  double radius=convertPixels(Integer.parseInt(data[1]))/ratioP;
+				  double speedAroundSun=convertPixels(Double.parseDouble(data[5]))/ratioS;
+				  //color
+				  String[] rgbValues= data[8].split(",");
+				  Color color= new Color(Integer.parseInt(rgbValues[0]),Integer.parseInt(rgbValues[1]), Integer.parseInt(rgbValues[2]));
+				  
+				  //distance from sun
+				  double multiplier;
+				  if (data[3].equals("M")) { //millions 
+					 multiplier=Math.pow(10, 6);
+				  }
+				  else { //billions
+					  multiplier=Math.pow(10, 9);
+				  }
+				  double distance=convertPixels(Double.parseDouble(data[2])*multiplier)/ratioD;
+				  
+				  this.spaceObjects.add(new Planet(data[0],speed,angle,data[7],radius,color,distance, speedAroundSun, new OrbitalMove(0,0), data));
+			  }
+			  //sun
+			  else {
+				  double speed =convertPixels(Integer.parseInt(data[2]))/ratioS;
+				  double angle= Double.parseDouble(data[3]);
+				  double radius=convertPixels(Integer.parseInt(data[1]))/ratioP;
+				  this.spaceObjects.add((new Sun(data[0],speed,angle, data[4],radius, Color.yellow, data)));
+			  }
+		  }		  
+		  textIn.close();
+		     
+	  }
+	  private double convertPixels (double value) {
+		  double convertRatio= 3779575.17575025;
+		  return value*convertRatio;
+	  }
+	  
 	 /** ----------------------------- INNER CLASSES ------------------------------ **/
 	  /** 
 	   * [SolarSystem.java]
@@ -187,12 +261,13 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	  private class SolarSystem extends JPanel {
-		private int centerX=(int)(screenSize.getWidth()/2);	     
-		private int centerY=(int)(screenSize.getHeight()/2)-100;	
+			
 		private Clock clock;
-		FrameRate frameRate;
+		private FrameRate frameRate;
+		private Star [] stars;
+		private int count=600;  
 		
-		SolarSystem(Dimension screenSize) {
+		SolarSystem() {
 		      this.setBackground(Color.black);	 
 		      this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
 		      this.setMinimumSize(this.getPreferredSize());
@@ -211,21 +286,22 @@ class Explore extends JFrame{
 	 		 clock.update();
 			 frameRate.update();
 			
-			 //stars twinkle
-			 int count=10;        //class for stars and draw them based on x and y, update evrey 10 count
-			 int x=0, y=0;
-			 if (count==10) {
-				 final int NUM_STARS=1000;
-				 for (int i=0; i<NUM_STARS; i++) {
-					 x=(int)((screenSize.getHeight()-300-1)*Math.random()+1);
-					 y=(int)((screenSize.getWidth()-300-1)*Math.random()+1);
+			 //--------stars twinkle---------------
+             //class for stars and draw them based on x and y, update evrey 10 count
+			 if (count==600) {
+				 stars=new Star [7*sizeAdjust.getPrevious()/3];
+				 for (int i=0; i<stars.length; i++) {
+					 int y=(int)((screenSize.getHeight()-1)*Math.random()+1);
+					 int x=(int)((screenSize.getWidth()-300-1)*Math.random()+1);
+					 stars[i]=new Star (x,y);
 					 count=0;
 				 }
 			 }
-			 g.drawOval(x, y, 5,5);
-			 
-
-		     //draw solar system
+			 //draw stars
+			 for (Star each: stars) {
+				 each.draw(g);
+			 }
+		     //-------draw solar system-------------
 		   	 Iterator<SpaceObject> itr=spaceObjects.iterator();
 			 while (itr.hasNext()) {
 			   SpaceObject object = (SpaceObject)itr.next();   
@@ -236,19 +312,23 @@ class Explore extends JFrame{
 		  				 ((Sun)object).getSphere().drawSphere(g, ((Sun)object).getColor());
 					 }
 		  			 else {
-		    		   ((Sun)object). drawSun(g,centerX, centerY, backgroundX, backgroundY,sizeAdjust.getPrevious());	
+		    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
 		  			 }
 		    	   }		    	   
 		    	   else  {		    		   
-		    		   if (selected) {
-		    			   ((Planet)object).drawOrbit(g, centerX,centerY, backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
+		    		   if (orbits) {
+		    			   ((Planet)object).drawOrbit(g,backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
 		    		   }
+			    	   if (label) {
+			    			  TextLabel label= new TextLabel(object.getName(),((Planet)object).getOrbitalMovement(), object.getRadius(), ((Planet)object).getDistanceFromSun());
+			    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
+			    	   }
 		    		   if (dimensional) {
 		    			   ((Planet)object).getSphere().createIcosahedron();
 			  			   ((Planet)object).getSphere().drawSphere(g, ((Planet)object).getColor());
 						}
 		    		   else {
-		    		   ((Planet)object).drawPlanet(g, centerX,centerY, backgroundX, backgroundY,sizeAdjust.getPrevious());
+		    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
 		    		   }
 		    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
 		    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
@@ -256,7 +336,7 @@ class Explore extends JFrame{
 			   }
 			 }
 			 
-	       	 //extra stuff
+	       	 //--------------extra stuff------------
 	       	 g.setColor(Color.white);
 		   	 g.drawString("Note: Planet sizes are inflated (not exactly to scale)", 20, 30);  
 		   	 frameRate.draw(g,20,45);
@@ -277,6 +357,42 @@ class Explore extends JFrame{
 		     count++;
 		     repaint();
 	    }
+	  }
+	  /** 
+	   * [PlanetDescription.java]
+	   * @author Nicole Streltsov
+	   * A class (JPanel) that contains the planet description
+	   * January 2019
+	   */
+	  class PlanetDescription  extends JPanel {
+		  private int startingX=40;
+		  private int startingY=20;
+		  
+		  PlanetDescription(){
+			  this.setBackground(Color.white);	 
+		      this.setPreferredSize(new Dimension(300,(int)screenSize.getHeight()-400));
+		      this.setMinimumSize(this.getPreferredSize());
+		      this.setMaximumSize(this.getPreferredSize());
+		  }
+		  /** paintComponent *******************************************
+		     * draws all the nessasary componets on the graphics panel(Solar System)
+		     */
+		    public void paintComponent(Graphics g) {   
+		    	if (off) {
+		    		g.setColor(Color.black);
+		    		int size= 12;
+	                Font font= new Font("Gugi", Font.PLAIN, size);
+	                g.setFont(font); 
+		    		g.drawString("Click a planet to view it's information.", startingX, startingY);
+		    	}
+		    	else {
+		    		//find chosen planet
+		    		
+		    		
+		    		
+		    	}
+		    	repaint();
+		    }
 	  }
 	  /** 
 	   * [SizeAdjustmentListener.java]
@@ -363,10 +479,44 @@ class Explore extends JFrame{
 		  public void actionPerformed(ActionEvent e) {
 			  JCheckBox checkBox=(JCheckBox) e.getSource();
 			if (checkBox.isSelected()) {
-				selected=true;
+				orbits=true;
 			}
 			else {
-				selected=false;
+				orbits=false;
+			}			
+		}
+	  }
+	  /** 
+	   * [LabelCheckListener.java]
+	   * @author Nicole Streltsov
+	   * The action listener for the label check box
+	   * January 2019
+	   */
+	  class LabelCheckListener implements ActionListener{
+		  public void actionPerformed(ActionEvent e) {
+			  JCheckBox checkBox=(JCheckBox) e.getSource();
+			if (checkBox.isSelected()) {
+				label=true;
+			}
+			else {
+				label=false;
+			}			
+		}
+	  }
+	  /** 
+	   * [TextureCheckListener.java]
+	   * @author Nicole Streltsov
+	   * The action listener for the texture check box
+	   * January 2019
+	   */
+	  class TextureCheckListener implements ActionListener{
+		  public void actionPerformed(ActionEvent e) {
+			  JCheckBox checkBox=(JCheckBox) e.getSource();
+			if (checkBox.isSelected()) {
+				texture=true;
+			}
+			else {
+				texture=false;
 			}			
 		}
 	  }
@@ -412,6 +562,7 @@ class Explore extends JFrame{
 	    private class MyMouseListener implements MouseListener {
 	     Rectangle sound=new Rectangle((int)screenSize.getWidth()-340,5, 30, 30);
 	      public void mouseClicked(MouseEvent e) {
+	          //sound
 	    	  if (sound.contains(e.getX(),e.getY()) && on==true){
 	    		  on=false;
 	    		  music.stop();
@@ -420,6 +571,22 @@ class Explore extends JFrame{
 	    		  on=true;
 	    		  music.start();
 	    	  }
+	    	  //planets
+	    	  Iterator<SpaceObject> itr=spaceObjects.iterator();
+			  while (itr.hasNext()) {
+				   SpaceObject object = (SpaceObject)itr.next(); 
+				   ClickArea area;
+				   if (object instanceof Planet) {
+					   area= new ClickArea(((Planet)object).getOrbitalMovement(), object.getRadius(), "p");
+				   }
+				   else {
+					  area=new ClickArea(object.getCenterX(),object.getCenterY(), object.getRadius(), "s" );
+				   }
+				   if (area.contains(e.getX(),e.getY())) {
+					   off=false;
+					   chosen=object.getName();
+				   }
+			  }
 	      }
 
 	      public void mousePressed(MouseEvent e) {

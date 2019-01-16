@@ -1,32 +1,30 @@
 import java.awt.Color;
-import java.awt.Graphics;
-
-import javax.swing.JFrame;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 
 abstract class SpaceObject{
 	private double axialTilt; //degreees
 	private double speedRotates; //pixels/s
 	private String directionRotates;
+	private String [] data;
 	protected double radius;
 	protected Color color;
 	private String name;
+	public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	public static final int centerX=(int)(screenSize.getWidth()/2);	     
+	public static final int centerY=(int)(screenSize.getHeight()/2)-100;
 	
 	SpaceObject(double radius){
 		this.radius=radius;
 	}
-	SpaceObject(String name, double speedRotates, double axialTilt, String directionRotates, double radius, Color color){
+	SpaceObject(String name, double speedRotates, double axialTilt, String directionRotates, double radius, Color color, String [] data){
 		this.name=name;
 		this.speedRotates=speedRotates;
 		this.axialTilt=axialTilt;
 		this.directionRotates= directionRotates;
 		this.radius=radius;
 		this.color=color;
-	}
-	public void roateAroundAxis() {
-		
-	}
-	public void covertSpeedRotation() {
-		
+		this.data=data;
 	}
 	public double getAngle() {
 		return this.axialTilt;
@@ -63,5 +61,11 @@ abstract class SpaceObject{
 	}
 	public void setColor(Color color) {
 		this.color=color;
+	}
+	public int getCenterX() {
+		return this.centerX;
+	}
+	public int getCenterY() {
+		return this.centerY;
 	}
 }

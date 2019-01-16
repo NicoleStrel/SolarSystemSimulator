@@ -10,8 +10,8 @@ class Planet extends SpaceObject{
 	private OrbitalMove orbitalMovement;
 	private Sphere sphere;
 	
-	Planet(String name, double speedRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, OrbitalMove orbitalMovement){
-		super(name, speedRotates, angleOfTilt, directionRotates, radius, color);
+	Planet(String name, double speedRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, OrbitalMove orbitalMovement, String  [] data){
+		super(name, speedRotates, angleOfTilt, directionRotates, radius, color, data);
 		this.distanceFromSun=distanceFromSun;
 		this.speedRotateAroundSun=speedRotateAroundSun;		
 		this.orbitalMovement=orbitalMovement;
@@ -38,14 +38,14 @@ class Planet extends SpaceObject{
 	public void setOrbitalX(OrbitalMove orbitalMovement) {
 		this.orbitalMovement=orbitalMovement;
 	}
-	public void drawPlanet(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY, int divisor) {
+	public void drawPlanet(Graphics g, int backgroundX, int backgroundY, int divisor) {
 		 int startingPoint=(int)(centerX-(distanceFromSun/divisor));
 		 int radius2=(int)(radius/divisor);
 	     g.setColor(color);
 		 g.fillOval(startingPoint-radius2*2+backgroundX+orbitalMovement.getOrbitalX(),centerY-radius2+backgroundY+orbitalMovement.getOrbitalY(),radius2*2, radius2*2);
 		
 	}
-	public void drawOrbit(Graphics g, int centerX, int centerY, int backgroundX, int backgroundY,int divisor, int sunRadius) {
+	public void drawOrbit(Graphics g, int backgroundX, int backgroundY,int divisor, int sunRadius) {
 		int distance=(int)(distanceFromSun/divisor);
 		int planetRadius=(int)(radius/divisor);
 		int radius2=distance+sunRadius/divisor+planetRadius;
@@ -65,5 +65,8 @@ class Planet extends SpaceObject{
 	 }
 	 public Sphere getSphere() {
 			return this.sphere;
-		}
+	}
+	 public void drawStats() {
+			//here
+	}	
 }
