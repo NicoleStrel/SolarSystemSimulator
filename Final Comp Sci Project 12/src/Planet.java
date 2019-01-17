@@ -35,15 +35,11 @@ class Planet extends SpaceObject{
 	public OrbitalMove getOrbitalMovement() {
 		return this.orbitalMovement;
 	}
-	public void setOrbitalX(OrbitalMove orbitalMovement) {
-		this.orbitalMovement=orbitalMovement;
-	}
 	public void drawPlanet(Graphics g, int backgroundX, int backgroundY, int divisor) {
 		 int startingPoint=(int)(centerX-(distanceFromSun/divisor));
 		 int radius2=(int)(radius/divisor);
 	     g.setColor(color);
 		 g.fillOval(startingPoint-radius2*2+backgroundX+orbitalMovement.getOrbitalX(),centerY-radius2+backgroundY+orbitalMovement.getOrbitalY(),radius2*2, radius2*2);
-		
 	}
 	public void drawOrbit(Graphics g, int backgroundX, int backgroundY,int divisor, int sunRadius) {
 		int distance=(int)(distanceFromSun/divisor);

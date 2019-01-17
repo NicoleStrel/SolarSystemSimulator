@@ -68,4 +68,10 @@ abstract class SpaceObject{
 	public int getCenterY() {
 		return this.centerY;
 	}
+	public String [] getData() {
+		return this.data;
+	}
+	public void drawAxis(Graphics g) {
+		
+	}
 }

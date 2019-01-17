@@ -1,9 +1,9 @@
-Earth 6371 124.6 M 1674 29.78 23.45 CW 0,0,255
-Neptune 64622 4.495 B 9719 5.43 28.32 CW 128,0,128
-Venus 6052 108.2 M 6.52 35.02 177.36 C 128,128,128
-Mercury 2440 57.91 M 10.83 47.87 0 CW 255,255,255
-Mars 3390 227.9 M 866 24.077 25.19 CW 255,0,0
-Uranus 25362 2.871 B 14794 6.81 97.77 C 0,255,255
-Saturn 58232 1.434 B 36840 9.69 26.73 CW 255,165,0
-Jupiter 69911 778.5 M 45583 13.07 3.13 CW 234,192,134
-Sun 695508 107000 7.25 CW
+Earth|6371|124.6|M|1674|29.78|23.45|CW|0,0,255|This is the planet description
+Neptune|64622|4.495|B|9719|5.43|28.32|CW|128,0,128|This is the planet description
+Venus|6052|108.2|M|6.52|35.02|177.36|C|128,128,128|This is the planet description
+Mercury|2440|57.91|M|10.83|47.87|0|CW|255,255,255|This is the planet description
+Mars|3390|227.9|M|866|24.077|25.19|CW|255,0,0|This is the planet description
+Uranus|25362|2.871|B|14794|6.81|97.77|C|0,255,255|This is the planet description
+Saturn|58232|1.434|B|36840|9.69|26.73|CW|255,165,0|This is the planet description
+Jupiter|69911|778.5|M|45583|13.07|3.13|CW|234,192,134|This is the planet description
+Sun|695508|107000|7.25|CW|This is the sun description

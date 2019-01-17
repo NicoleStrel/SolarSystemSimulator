@@ -33,6 +33,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -40,6 +41,10 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+
+import com.sun.j3d.utils.universe.SimpleUniverse;
+import com.sun.j3d.utils.geometry.ColorCube;
+import javax.media.j3d.BranchGroup;
 
 /** 
  * [Explore.java]
@@ -64,11 +69,13 @@ class Explore extends JFrame{
     private boolean orbits;
     private boolean on=true;
     private Clip music;
-    private boolean dimensional=false;
+    private boolean threeD=false;
     private boolean label;
     private boolean  texture;
+    private boolean axialTilt;
     private boolean off=true;
     private String chosen;
+    private boolean play=true;
     
     /** Explore constructor*******************************************
      * contstructor to set up the properties of the Jframe and its components
@@ -158,8 +165,27 @@ class Explore extends JFrame{
 	    textureCheck.setFocusable(false);
 	    textureCheck.addActionListener(new TextureCheckListener());
 	    controlBar.add(textureCheck);
-	    controlBar.add(Box.createRigidArea(new Dimension(0,95)));
 	    
+	    
+	    //---axial tilt checkbox----
+	    JCheckBox axialCheck=new JCheckBox("Show axial tilts: ", false);
+	    axialCheck.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    axialCheck.setHorizontalTextPosition(SwingConstants.LEFT);
+	    axialCheck.setFocusable(false);
+	    axialCheck.addActionListener(new AxialCheckListener());
+	    controlBar.add(axialCheck);
+	    controlBar.add(Box.createRigidArea(new Dimension(0,20)));
+	   
+	    //------option drop down menu------
+	    String[] options = { "Two-Dimensional", "Three-Dimensional" };
+		JComboBox <String>optionBox = new JComboBox<String>(options);
+		optionBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+		optionBox.setSelectedIndex(0);
+		optionBox.addActionListener(new OptionBoxListener());
+		optionBox.setFocusable(false);
+		controlBar.add(optionBox);
+		controlBar.add(Box.createRigidArea(new Dimension(0,40)));
+		
 	    //---graphics panel-----
 	    planetDesc = new PlanetDescription();
 	    controlBar.add(planetDesc);
@@ -193,28 +219,16 @@ class Explore extends JFrame{
 	    this.pack();
 	    this.setVisible(true);
 	}
-     /*
-	  private void generateSpaceObjects() {     //implement read from file
-		  //add converted data
-		 this.spaceObjects.add(new Planet("Jupiter", 47856770.73097/ratioS, 3.13,"CW",264233880111.9/ratioP, new Color(234,192,134),2.942399274322*(Math.pow(10,15))/ratioD,49399047.54706/ratioS, new OrbitalMove(0,0)));
-		 this.spaceObjects.add(new Planet("Saturn", 38677651.37199/ratioS, 26.73,"CW",220092221634.3/ratioP,Color.orange, 5.419910802026*(Math.pow(10, 15))/ratioD,36624083.45302/ratioS, new OrbitalMove(0,0)));
-		 this.spaceObjects.add(new Planet("Uranus", 15531954.19155/ratioS, 97.77, "C", 95857585607.38/ratioP, new Color(0,255,255), 1.085116032958*(Math.pow(10,  16))/ratioD,25738906.94686/ratioS, new OrbitalMove(0,0)));		
-		 this.spaceObjects.add(new Planet("Mars", 909199.4859778/ratioS, 25.19, "CW",12812759845.79/ratioP, Color.red, 8.613651825535*(Math.pow(10,  14))/ratioD,91000831.50654/ratioS, new OrbitalMove(0,0)));
-		 this.spaceObjects.add(new Planet("Mercury", 11370.22186106/ratioS, 0, "CW",9222163428.831/ratioP,Color.white, 2.188751984277*(Math.pow(10,  14))/ratioD,180928263.6632/ratioS, new OrbitalMove(0,0)));
-		 this.spaceObjects.add(new Planet("Venus", 6845.230176128/ratioS, 177.36, "C",22873988963.64/ratioP,Color.gray, 4.089500340162*(Math.pow(10,  14))/ratioD,132360722.6548/ratioS, new OrbitalMove(0,0)));
-		 this.spaceObjects.add(new Planet("Neptune", 10203803.00854/ratioS, 28.32, "CW",244243707007.3/ratioP, new Color(128,0,128), 1.6989190415*(Math.pow(10,  16))/ratioD,20523093.20432/ratioS, new OrbitalMove(0,0)));
-		 this.spaceObjects.add(new Planet("Earth", 1757502.456724/ratioS, 23.45, "CW",24079673444.7/ratioP,Color.blue, 5.654244462922 *(Math.pow(10,  14))/ratioD,112555748.7338/ratioS, new OrbitalMove(0,0)));
-		 this.spaceObjects.add(new Sun("Sun", 112337373.1953/ratioS, 7.25, "CW", 2.628724771336*(Math.pow(10, 12))/ratioP, Color.yellow));
-		  
-	  }
-	  */
+	/** readPlanetStats *******************************************
+     * reads all the planet information from the text file and stores it into variables
+     */
 	  private void readPlanetStats() throws FileNotFoundException {
 		  File fileIn = new File("planetStats.txt");
 		  Scanner textIn = new Scanner(fileIn); 
 		  
 		  while (textIn.hasNext()) {
 			  String line= textIn.nextLine();
-			  String [] data= line.split(" ");
+			  String [] data= line.split("[|]");
 			  //planets
 			  if (!(data[0].equals("Sun"))){
 				  double speed=convertPixels(Double.parseDouble(data[4])*0.000277778)/ratioS;
@@ -306,33 +320,37 @@ class Explore extends JFrame{
 			 while (itr.hasNext()) {
 			   SpaceObject object = (SpaceObject)itr.next();   
 			   if (sizeAdjust!=null) {
-		    	   if (object instanceof Sun) {
-		  			 if (dimensional) {
-		  				 ((Sun)object).getSphere().createIcosahedron();
-		  				 ((Sun)object).getSphere().drawSphere(g, ((Sun)object).getColor());
-					 }
-		  			 else {
-		    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
-		  			 }
-		    	   }		    	   
-		    	   else  {		    		   
-		    		   if (orbits) {
-		    			   ((Planet)object).drawOrbit(g,backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
-		    		   }
-			    	   if (label) {
-			    			  TextLabel label= new TextLabel(object.getName(),((Planet)object).getOrbitalMovement(), object.getRadius(), ((Planet)object).getDistanceFromSun());
-			    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
+				   if (threeD) {
+					   SimpleUniverse universe = new SimpleUniverse();
+					   BranchGroup group = new BranchGroup();
+					   group.addChild(new ColorCube(0.3));
+					   universe.getViewingPlatform().setNominalViewingTransform();
+					   universe.addBranchGraph(group); 
+				   }
+				   else {
+			    	   if (object instanceof Sun) {
+			  				 //((Sun)object).getSphere().createIcosahedron();
+			  				// ((Sun)object).getSphere().drawSphere(g, ((Sun)object).getColor());
+			    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
+			  			 
+			    	   }		    	   
+			    	   else  {		    		   
+			    		   if (orbits) {
+			    			   ((Planet)object).drawOrbit(g,backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
+			    		   }
+				    	   if (label) {
+				    			  TextLabel label= new TextLabel(object.getName(),((Planet)object).getOrbitalMovement(), object.getRadius(), ((Planet)object).getDistanceFromSun());
+				    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
+				    	   }
+			    		   //((Planet)object).getSphere().createIcosahedron();
+				  		   //((Planet)object).getSphere().drawSphere(g, ((Planet)object).getColor());
+			    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());		    		   
+			    		   if (play) {
+				    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
+				    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
+			    		   }
 			    	   }
-		    		   if (dimensional) {
-		    			   ((Planet)object).getSphere().createIcosahedron();
-			  			   ((Planet)object).getSphere().drawSphere(g, ((Planet)object).getColor());
-						}
-		    		   else {
-		    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
-		    		   }
-		    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
-		    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
-		    	   }
+				   }
 			   }
 			 }
 			 
@@ -353,6 +371,15 @@ class Explore extends JFrame{
 		     }
 		     else {
 		    	 g.drawImage(soundOff, (int)screenSize.getWidth()-330, 5, null);
+		     }
+		     if (play) {
+		    	 g.fillRect((int)screenSize.getWidth()-365, 5, 5, 20);
+		    	 g.fillRect((int)screenSize.getWidth()-355,5, 5, 20);
+		     }
+		     else {
+		    	 int [] xPoints= {(int)screenSize.getWidth()-365, (int)screenSize.getWidth()-365, (int)screenSize.getWidth()-350};
+		    	 int [] yPoints= {5,25,15};
+		    	 g.fillPolygon(xPoints, yPoints,3);
 		     }
 		     count++;
 		     repaint();
@@ -386,12 +413,47 @@ class Explore extends JFrame{
 		    		g.drawString("Click a planet to view it's information.", startingX, startingY);
 		    	}
 		    	else {
-		    		//find chosen planet
-		    		
-		    		
-		    		
+			        //find chosen planet
+		    		 Iterator<SpaceObject> itr=spaceObjects.iterator();
+					  while (itr.hasNext()) {
+						   SpaceObject object = (SpaceObject)itr.next();
+						   if (object.getName().equals(chosen)) {
+							   g.setColor(Color.black);
+							   g.drawLine(0, 0, 300, 0);
+							   //name
+							   int size= 40;
+				               Font font= new Font("Gugi", Font.PLAIN, size);
+				               g.setFont(font);
+				               g.drawString(object.getName(), startingX, startingY+size);
+					           BufferedImage picture = null;
+							   try {picture = ImageIO.read(new File("images/planets/"+object.getName()+".png"));} catch (IOException e) {}
+							   g.drawImage(picture,startingX+5+(object.getName().length()*25), startingY, null);
+				               
+				               //stats
+				               int size2=12;
+			            	   Font font2= new Font("Gugi", Font.PLAIN, size2);
+				               g.setFont(font2);
+				               int start=startingY+size+4;
+			            	   int space=10;
+				               if (object instanceof Sun) {
+				            	   g.drawString(object.getData()[5], startingX, startingY+start+size2+space);
+				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2+space)*2);
+				            	   g.drawString("Rotational speed: "+object.getData()[2]+" km/h", startingX, startingY+start+(size2+space)*3);
+				            	   g.drawString("Axial tilt: "+object.getData()[3]+"° "+object.getData()[4], startingX, startingY+start+(size2+space)*4); 
+				               }
+				               else {
+				            	   g.drawString(object.getData()[9], startingX, startingY+start+size2+space);
+				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2+space)*2);
+				            	   g.drawString("Rotational speed: "+object.getData()[4]+" km/h", startingX, startingY+start+(size2+space)*3);
+				            	   g.drawString("Axial tilt: "+object.getData()[6]+"° "+object.getData()[7], startingX, startingY+start+(size2+space)*4);
+				            	   g.drawString("Distance from Sun: "+object.getData()[2]+" "+object.getData()[3]+" km", startingX, startingY+start+(size2+space)*5);
+				            	   g.drawString("Speed around Sun: "+object.getData()[5]+" km/s", startingX, startingY+start+(size2+space)*6);
+				               } 							   
+						   }
+		    	      }
+		    	
 		    	}
-		    	repaint();
+		         repaint();
 		    }
 	  }
 	  /** 
@@ -521,6 +583,41 @@ class Explore extends JFrame{
 		}
 	  }
 	  /** 
+	   * [AxialCheckListener.java]
+	   * @author Nicole Streltsov
+	   * The action listener for the axial tilt check box
+	   * January 2019
+	   */
+	  class AxialCheckListener implements ActionListener{
+		  public void actionPerformed(ActionEvent e) {
+			  JCheckBox checkBox=(JCheckBox) e.getSource();
+			if (checkBox.isSelected()) {
+				axialTilt=true;
+			}
+			else {
+				axialTilt=false;
+			}			
+		}
+	  }
+	  /** 
+	   * [OptionBoxListener.java]
+	   * @author Nicole Streltsov
+	   * The action listener for the option drop down menu
+	   * January 2019
+	   */
+	  class OptionBoxListener implements ActionListener{
+		  public void actionPerformed(ActionEvent e) {
+		      JComboBox <String> cb = (JComboBox<String>)e.getSource();
+		       String dimension = (String)cb.getSelectedItem();
+		       if (dimension.equals("Two-Dimensional")) {
+					  threeD=false;
+		       }
+		       else if(dimension.equals("Three-Dimensional")) {
+					  threeD=true;
+		       }
+		    }
+	  }
+	  /** 
 	   * [MyKeyListener.java]
 	   * @author Nicole Streltsov
 	   * The key listener that regulates inputs from the keyboard
@@ -534,7 +631,7 @@ class Explore extends JFrame{
 	      public void keyPressed(KeyEvent e) {
 		    	  if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 		    		  explore.dispose();
-		 		  System.exit(0);
+		    		  System.exit(0);
 		    	  }
 		    	  else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
 		    		  backgroundX-=7;		    	    
@@ -561,35 +658,38 @@ class Explore extends JFrame{
 		   */
 	    private class MyMouseListener implements MouseListener {
 	     Rectangle sound=new Rectangle((int)screenSize.getWidth()-340,5, 30, 30);
+	     Rectangle stop=new Rectangle((int)screenSize.getWidth()-365, 5, 15, 15);
 	      public void mouseClicked(MouseEvent e) {
 	          //sound
-	    	  if (sound.contains(e.getX(),e.getY()) && on==true){
+	    	  if (sound.contains(e.getX(),e.getY()) && (on==true)){
 	    		  on=false;
 	    		  music.stop();
 	    	  }
-	    	  else if (sound.contains(e.getX(),e.getY()) && on==false){
+	    	  else if (sound.contains(e.getX(),e.getY()) && (on==false)){
 	    		  on=true;
 	    		  music.start();
 	    	  }
-	    	  //planets
+	    	  //stop
+	    	  if (stop.contains(e.getX(),e.getY()) && (play==true)){
+	    		  play=false;
+	    		 
+	    	  }
+	    	  else if (stop.contains(e.getX(),e.getY()) && (play==false)){
+	    		  play=true;
+	    	  }
+	      }
+
+	      public void mousePressed(MouseEvent e) {	    			  
+	    	  //planets selection
 	    	  Iterator<SpaceObject> itr=spaceObjects.iterator();
 			  while (itr.hasNext()) {
 				   SpaceObject object = (SpaceObject)itr.next(); 
-				   ClickArea area;
-				   if (object instanceof Planet) {
-					   area= new ClickArea(((Planet)object).getOrbitalMovement(), object.getRadius(), "p");
-				   }
-				   else {
-					  area=new ClickArea(object.getCenterX(),object.getCenterY(), object.getRadius(), "s" );
-				   }
+				   ClickArea area= new ClickArea(object, sizeAdjust.getPrevious(),  backgroundX, backgroundY); 
 				   if (area.contains(e.getX(),e.getY())) {
 					   off=false;
 					   chosen=object.getName();
 				   }
 			  }
-	      }
-
-	      public void mousePressed(MouseEvent e) {
 	      }
 
 	      public void mouseReleased(MouseEvent e) {
