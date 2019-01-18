@@ -329,8 +329,6 @@ class Explore extends JFrame{
 				   }
 				   else {
 			    	   if (object instanceof Sun) {
-			  				 //((Sun)object).getSphere().createIcosahedron();
-			  				// ((Sun)object).getSphere().drawSphere(g, ((Sun)object).getColor());
 			    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
 			  			 
 			    	   }		    	   
@@ -342,11 +340,12 @@ class Explore extends JFrame{
 				    			  TextLabel label= new TextLabel(object.getName(),((Planet)object).getOrbitalMovement(), object.getRadius(), ((Planet)object).getDistanceFromSun());
 				    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
 				    	   }
-			    		   //((Planet)object).getSphere().createIcosahedron();
-				  		   //((Planet)object).getSphere().drawSphere(g, ((Planet)object).getColor());
-			    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());		    		   
+			    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());	
+			    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
+			    		   if (axialTilt) {
+			    			   ((Planet)object).drawAxis(g, sizeAdjust.getPrevious(), backgroundX, backgroundY);
+			    		   }
 			    		   if (play) {
-				    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
 				    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
 			    		   }
 			    	   }

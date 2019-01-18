@@ -1,9 +1,10 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 
 abstract class SpaceObject{
-	private double axialTilt; //degreees
+	protected double axialTilt; //degreees
 	private double speedRotates; //pixels/s
 	private String directionRotates;
 	private String [] data;
@@ -70,8 +71,5 @@ abstract class SpaceObject{
 	}
 	public String [] getData() {
 		return this.data;
-	}
-	public void drawAxis(Graphics g) {
-		
 	}
 }

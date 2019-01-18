@@ -59,10 +59,46 @@ class Planet extends SpaceObject{
 		 orbitalMovement.setOrbitalX(newX);
 		 orbitalMovement.setOrbitalY(newY);		 
 	 }
-	 public Sphere getSphere() {
-			return this.sphere;
+	public void drawAxis(Graphics g, int divisor, int backgroundX, int backgroundY) {
+		int startingPoint=(int)(centerX-(distanceFromSun/divisor));
+		int radius2=(int)(radius/divisor);
+		int beyondVertical;
+		int x1=0, x2=0, y1=0, y2=0;
+		//depending on the quadrant the tilt is located, assign values for x's  and y's 
+		//note: working with values in the clockwise direction (usually unit circle is counter-clockwise)
+		//Q1
+		if (axialTilt<90) {
+			beyondVertical=radius2*(int)(Math.tan(axialTilt*(Math.PI/180))); 
+			x1=startingPoint-radius2+beyondVertical;
+			y1=centerY-radius2-5;
+			x2=startingPoint-radius2-beyondVertical;
+			y2=centerY+radius2+5;
+		}
+		//Q4
+		else if (axialTilt>90  && axialTilt<180) {
+			beyondVertical=radius2*(int)(Math.tan((180-axialTilt)*(Math.PI/180))); 
+			x1=startingPoint-radius2+beyondVertical;
+			y1=centerY+radius2+5;
+			x2=startingPoint-radius2-beyondVertical;
+			y2=centerY-radius2-5;
+		}
+		//Q3
+		else if (axialTilt>180 && axialTilt<270) {
+			beyondVertical=radius2*(int)(Math.tan((axialTilt-180)*(Math.PI/180))); 
+			x1=startingPoint-radius2-beyondVertical;
+			y1=centerY+radius2+5;
+			x2=startingPoint-radius2+beyondVertical;
+			y2=centerY-radius2-5;
+		}
+		//Q2
+		else if (axialTilt>270) {
+			beyondVertical=radius2*(int)(Math.tan((360-axialTilt)*(Math.PI/180))); 
+			x1=startingPoint-radius2-beyondVertical;
+			y1=centerY-radius2-5;
+			x2=startingPoint-radius2+beyondVertical;
+			y2=centerY+radius2+5;
+		}
+		g.setColor(Color.white);
+		g.drawLine(x1+backgroundX+orbitalMovement.getOrbitalX(), y1+backgroundY+orbitalMovement.getOrbitalY(), x2+backgroundX+orbitalMovement.getOrbitalX(), y2+backgroundY+orbitalMovement.getOrbitalY());
 	}
-	 public void drawStats() {
-			//here
-	}	
 }
