@@ -1,9 +1,12 @@
 //imports
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -24,6 +27,10 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
+import javax.media.j3d.Appearance;
+import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Canvas3D;
+import javax.media.j3d.ColoringAttributes;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -41,10 +48,11 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.vecmath.Color3f;
 
+import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
-import com.sun.j3d.utils.geometry.ColorCube;
-import javax.media.j3d.BranchGroup;
+
 
 /** 
  * [Explore.java]
@@ -57,8 +65,9 @@ class Explore extends JFrame{
 	private JFrame explore;
 	private SpeedAdjustmentListener speedAdjust;	
 	private SizeAdjustmentListener sizeAdjust;
-    private static SolarSystem solarSystem;
+    private SolarSystem solarSystem;
     private static PlanetDescription planetDesc;
+    private JPanel controlBar;
     public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private ArrayList<SpaceObject> spaceObjects= new ArrayList<SpaceObject>();
     private static final double ratioD=Math.pow(10,12)*2; 
@@ -86,19 +95,20 @@ class Explore extends JFrame{
 	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 	    this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.X_AXIS));
-	    this.setUndecorated(true);  
-	    this.setResizable(false);
-	   
+	    //this.setUndecorated(true);  
+	    //this.setResizable(false);
+	    
+	    
 	    //------solar system panel-------
 	    try {readPlanetStats();} catch (FileNotFoundException e) {
 			  System.out.print("hi");
 	    }
 	    //generateSpaceObjects();
 	    solarSystem = new SolarSystem();
-	    this.add(solarSystem);
+	    this.getContentPane().add(solarSystem);
 	    
 	    //-------control bar panel------
-	    JPanel controlBar = new JPanel();
+	    controlBar = new JPanel();
 	    controlBar.setPreferredSize(new Dimension(300,(int)screenSize.getHeight()));
 	    controlBar.setMinimumSize(controlBar.getPreferredSize());
 	    controlBar.setMaximumSize(controlBar.getPreferredSize());
@@ -207,7 +217,8 @@ class Explore extends JFrame{
 	    }
 	    
 	    
-	    this.add(controlBar);
+	    this.getContentPane().add(controlBar);
+	    
 	    //-------------------------------------------------		    
 	    //listeners
 	    MyKeyListener keyListener = new MyKeyListener();
@@ -266,6 +277,50 @@ class Explore extends JFrame{
 		  double convertRatio= 3779575.17575025;
 		  return value*convertRatio;
 	  }
+	  private void  checkExists() {
+		   if (threeD) {
+			   replacePanel();
+			   /*
+			   this.getContentPane().removeAll();
+			   this.getContentPane().add(new ThreeDPanel()); 
+			   //this.getContentPane().add(controlBar);
+			   this.add(new JLabel ("hi"));
+			   validate();
+		       repaint();
+		       setVisible(true);
+		      */
+		     
+		       
+		   }
+	  }
+	  private void replacePanel(){
+		   //int index = explore.getComponentZOrder(solarSystem);
+		   //System.out.println("AAA -> " + index);
+		   System.out.println( "ASS " + this.getContentPane().getComponentCount());
+		   this.getContentPane().remove(solarSystem);
+		   //this.getContentPane().remove(controlBar);
+		   //this.getContentPane().removeAll();
+		   ThreeDPanel tdpanel = new ThreeDPanel();
+		   this.getContentPane().add(tdpanel, 0);
+		   //this.getContentPane().add(controlBar);
+		   
+		   //this.setSize(200,200);
+		   //this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+		   
+		   revalidate();
+		   //validate();
+		   repaint();
+		   
+		   //this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+		   //revalidate();
+		   //validate();
+		   //repaint();
+		   //setVisible(false);
+		   //setVisible(true);
+		   //this.setState(ICONIFIED);
+		   //this.setExtendedState(NORMAL);
+		   
+		}
 	  
 	 /** ----------------------------- INNER CLASSES ------------------------------ **/
 	  /** 
@@ -296,6 +351,8 @@ class Explore extends JFrame{
 	    	 super.paintComponent(g); 
 	       	 setDoubleBuffered(true); 
 	       	 
+	       	 //check if exists
+	       	 checkExists();
 	       	 //update
 	 		 clock.update();
 			 frameRate.update();
@@ -320,36 +377,26 @@ class Explore extends JFrame{
 			 while (itr.hasNext()) {
 			   SpaceObject object = (SpaceObject)itr.next();   
 			   if (sizeAdjust!=null) {
-				   if (threeD) {
-					   SimpleUniverse universe = new SimpleUniverse();
-					   BranchGroup group = new BranchGroup();
-					   group.addChild(new ColorCube(0.3));
-					   universe.getViewingPlatform().setNominalViewingTransform();
-					   universe.addBranchGraph(group); 
-				   }
-				   else {
-			    	   if (object instanceof Sun) {
-			    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
-			  			 
-			    	   }		    	   
-			    	   else  {		    		   
-			    		   if (orbits) {
-			    			   ((Planet)object).drawOrbit(g,backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
-			    		   }
-				    	   if (label) {
-				    			  TextLabel label= new TextLabel(object.getName(),((Planet)object).getOrbitalMovement(), object.getRadius(), ((Planet)object).getDistanceFromSun());
-				    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
-				    	   }
-			    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());	
-			    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
-			    		   if (axialTilt) {
-			    			   ((Planet)object).drawAxis(g, sizeAdjust.getPrevious(), backgroundX, backgroundY);
-			    		   }
-			    		   if (play) {
-				    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
-			    		   }
+		    	   if (object instanceof Sun) {
+		    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
+		    	   }		    	   
+		    	   else  {		    		   
+		    		   if (orbits) {
+		    			   ((Planet)object).drawOrbit(g,backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
+		    		   }
+			    	   if (label) {
+			    			  TextLabel label= new TextLabel(object.getName(),((Planet)object).getOrbitalMovement(), object.getRadius(), ((Planet)object).getDistanceFromSun());
+			    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
 			    	   }
-				   }
+		    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());	
+		    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
+		    		   if (axialTilt) {
+		    			   ((Planet)object).drawAxis(g, sizeAdjust.getPrevious(), backgroundX, backgroundY);
+		    		   }
+		    		   if (play) {
+			    		   (((Planet)object).getOrbitalMovement()).updateRadialMovement((Planet)object, speedAdjust.getPrevious(), clock.getElapsedTime());
+		    		   }
+		    	   }
 			   }
 			 }
 			 
@@ -384,6 +431,51 @@ class Explore extends JFrame{
 		     repaint();
 	    }
 	  }
+	  /** 
+	   * [ThreeDPanel.java]
+	   * @author Nicole Streltsov
+	   * A class (JPanel) that contains the 3d rendering
+	   * January 2019
+	   */
+	  class ThreeDPanel extends JPanel{
+			private JPanel threeD;
+			private Clock clock;
+			private FrameRate frameRate;
+			
+			public ThreeDPanel() {
+				this.setBackground(Color.BLUE);	 
+			    this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
+			    this.setMinimumSize(this.getPreferredSize());
+			    this.setMaximumSize(this.getPreferredSize());
+			    this.setLayout(new BorderLayout());
+			    clock=new Clock();
+			    frameRate=new FrameRate();
+			    this.setUp();
+
+			}
+			public void setUp(){
+		         GraphicsConfiguration config= SimpleUniverse.getPreferredConfiguration();
+		         Canvas3D canvas= new Canvas3D(config);
+				 BranchGroup group = new BranchGroup();
+				 group.addChild(drawSphere());
+				 this.add ("Center", canvas);
+				 SimpleUniverse universe = new SimpleUniverse(canvas);
+				 universe.getViewingPlatform().setNominalViewingTransform();
+				 universe.getViewer().getView().setBackClipDistance(100.0);
+				 universe.addBranchGraph(group);
+				 canvas.setFocusable(true);
+				 canvas.requestFocus();
+				
+			}
+			 public Sphere drawSphere() { 
+				 //add sphere
+				 Appearance app = new Appearance();		 
+				 ColoringAttributes color= new ColoringAttributes(new Color3f(1.0f, 0.0f, 0.0f), 1);
+				 app.setColoringAttributes(color);
+				 Sphere sphere= new Sphere(0.3f, Sphere.GENERATE_NORMALS, 120,app);
+				 return sphere;
+			 }
+		}
 	  /** 
 	   * [PlanetDescription.java]
 	   * @author Nicole Streltsov
@@ -655,11 +747,14 @@ class Explore extends JFrame{
 		   * The key listener that regulates inputs from the mouse
 		   * January 2019
 		   */
-	    private class MyMouseListener implements MouseListener {
-	     Rectangle sound=new Rectangle((int)screenSize.getWidth()-340,5, 30, 30);
-	     Rectangle stop=new Rectangle((int)screenSize.getWidth()-365, 5, 15, 15);
+	    private class MyMouseListener implements MouseListener {	    	
 	      public void mouseClicked(MouseEvent e) {
-	          //sound
+	         
+	      }
+	      public void mousePressed(MouseEvent e) {
+	    	  Rectangle sound=new Rectangle((int)screenSize.getWidth()-340,5, 30, 30);
+		      Rectangle stop=new Rectangle((int)screenSize.getWidth()-365, 5, 15, 15);
+	    	  //sound
 	    	  if (sound.contains(e.getX(),e.getY()) && (on==true)){
 	    		  on=false;
 	    		  music.stop();
@@ -676,9 +771,6 @@ class Explore extends JFrame{
 	    	  else if (stop.contains(e.getX(),e.getY()) && (play==false)){
 	    		  play=true;
 	    	  }
-	      }
-
-	      public void mousePressed(MouseEvent e) {	    			  
 	    	  //planets selection
 	    	  Iterator<SpaceObject> itr=spaceObjects.iterator();
 			  while (itr.hasNext()) {

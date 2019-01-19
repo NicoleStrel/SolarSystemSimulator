@@ -22,8 +22,7 @@ class ClickArea {
 			endY=y+radius*2;
 		}
 		else {
-			int shift=radius-(radius*(int)Math.cos(45*(Math.PI/180)));
-			System.out.println(shift);
+			int shift=(int)((2*radius-Math.sqrt(2)*radius)/2);
 			x=object.getCenterX()+ backgroundX+shift;
 			y=object.getCenterY()-radius+backgroundY+shift;
 			endX=object.getCenterX()+ backgroundX+radius*2-shift;

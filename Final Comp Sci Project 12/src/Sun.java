@@ -10,10 +10,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 class Sun extends SpaceObject{
-	Sphere sphere;
 	Sun(String name, double speedRotates, double angleOfTilt, String directionRotates, double radius, Color color, String [] data){
 		super(name, speedRotates, angleOfTilt, directionRotates, radius, color, data);
-		this.sphere=new Sphere(radius);
 	}
 	public void drawSun(Graphics g2, int backgroundX, int backgroundY, int divisor) {
 		 int radius2=(int)(radius/divisor);
@@ -39,9 +37,6 @@ class Sun extends SpaceObject{
 		
 		*/
 		  
-	}
-	public Sphere getSphere() {
-		return this.sphere;
 	}
 	public void drawStats(Graphics g) {
 		
