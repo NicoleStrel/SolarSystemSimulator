@@ -91,8 +91,6 @@ class Explore extends JFrame{
     private boolean label;
     private boolean  texture;
     private boolean axialTilt;
-    private boolean off=true;
-    private String chosen;
     private boolean play=true;
     
     /** Explore constructor*******************************************
@@ -104,8 +102,8 @@ class Explore extends JFrame{
 	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 	    this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.X_AXIS));
-	    //this.setUndecorated(true);  
-	   //this.setResizable(false);
+	    this.setUndecorated(true);  
+	    this.setResizable(false);
 	    
 	    
 	    //------solar system panel-------
@@ -176,16 +174,7 @@ class Explore extends JFrame{
 	    labelCheck.setFocusable(false);
 	    labelCheck.addActionListener(new LabelCheckListener());
 	    controlBar.add(labelCheck);
-	    
-	    //---texture checkbox----
-	    JCheckBox textureCheck=new JCheckBox("Show planet textures: ", false);
-	    textureCheck.setAlignmentX(Component.CENTER_ALIGNMENT);
-	    textureCheck.setHorizontalTextPosition(SwingConstants.LEFT);
-	    textureCheck.setFocusable(false);
-	    textureCheck.addActionListener(new TextureCheckListener());
-	    controlBar.add(textureCheck);
-	    
-	    
+	        
 	    //---axial tilt checkbox----
 	    JCheckBox axialCheck=new JCheckBox("Show axial tilts: ", false);
 	    axialCheck.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -206,7 +195,7 @@ class Explore extends JFrame{
 		controlBar.add(Box.createRigidArea(new Dimension(0,40)));
 		
 	    //---graphics panel-----
-	    planetDesc = new PlanetDescription();
+	    planetDesc = new PlanetDescription(true, null);
 	    controlBar.add(planetDesc);
 	    
 	    //---------audio-------------
@@ -233,6 +222,8 @@ class Explore extends JFrame{
 	    MyKeyListener keyListener = new MyKeyListener();
 	    this.addKeyListener(keyListener);
 	    MyMouseListener mouseListener = new MyMouseListener();
+	    
+	    //set up 3d panel
 	    
 	    this.addMouseListener(mouseListener);
 	    this.requestFocusInWindow(); 
@@ -288,49 +279,14 @@ class Explore extends JFrame{
 	  }
 	  private void  checkExists() {
 		   if (threeD) {
-			   replacePanel();
-			   /*
-			   this.getContentPane().removeAll();
-			   this.getContentPane().add(new ThreeDPanel()); 
-			   //this.getContentPane().add(controlBar);
-			   this.add(new JLabel ("hi"));
-			   validate();
-		       repaint();
-		       setVisible(true);
-		      */
-		     
-		       
+			   this.getContentPane().remove(solarSystem);
+			   ThreeDPanel tdpanel = new ThreeDPanel();
+			   this.getContentPane().add(tdpanel, 0);		   
+			   revalidate();
+			   repaint();  
 		   }
 	  }
-	  private void replacePanel(){
-		   //int index = explore.getComponentZOrder(solarSystem);
-		   //System.out.println("AAA -> " + index);
-		   //System.out.println( "ASS " + this.getContentPane().getComponentCount());
-		   this.getContentPane().remove(solarSystem);
-		   //this.getContentPane().remove(controlBar);
-		   //this.getContentPane().removeAll();
-		   ThreeDPanel tdpanel = new ThreeDPanel();
-		   this.getContentPane().add(tdpanel, 0);
-		   //this.getContentPane().add(controlBar);
-		   
-		   //this.setSize(200,200);
-		   //this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-		   
-		   revalidate();
-		   //validate();
-		   repaint();
-		   
-		   //this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-		   //revalidate();
-		   //validate();
-		   //repaint();
-		   //setVisible(false);
-		   //setVisible(true);
-		   //this.setState(ICONIFIED);
-		   //this.setExtendedState(NORMAL);
-		   
-		}
-	  
+
 	 /** ----------------------------- INNER CLASSES ------------------------------ **/
 	  /** 
 	   * [SolarSystem.java]
@@ -471,19 +427,15 @@ class Explore extends JFrame{
 				universe.getViewingPlatform().setNominalViewingTransform();
 				universe.getViewer().getView().setBackClipDistance(100.0);				
 				
-				Thread t = new Thread(new Runnable() { 
-					public void run() { 
-						while (threeD) {
-							clock.update();
-							frameRate.update();
-							paintComponent(canvas); 
-							try{ Thread.sleep((long) clock.getElapsedTime());} catch (Exception exc){}
-						}
-					}
-				}); 
-			    t.start();
-			
-
+				//to do:
+				//add all the planets and lighting 
+				//add evreything();
+				//canvas.setVisible(false); //once you click the graphics panel, say true;
+                
+				//for now
+				paintComponent(canvas);
+				
+				
 			}
 			public void paintComponent(Canvas3D canvas){
 				canvas.setDoubleBufferEnable(true);
@@ -532,17 +484,28 @@ class Explore extends JFrame{
 	  class PlanetDescription  extends JPanel {
 		  private int startingX=40;
 		  private int startingY=20;
+		  private boolean off;
+		  private String chosen;
 		  
-		  PlanetDescription(){
+		  PlanetDescription(boolean off, String chosen){
 			  this.setBackground(Color.white);	 
 		      this.setPreferredSize(new Dimension(300,(int)screenSize.getHeight()-400));
 		      this.setMinimumSize(this.getPreferredSize());
 		      this.setMaximumSize(this.getPreferredSize());
+		      this.off=off;
+		      this.chosen=chosen;
+		  }
+		  public void setValues(boolean off, String chosen) {
+			  this.off=off;
+			  this.chosen=chosen;
+			  repaint();
 		  }
 		  /** paintComponent *******************************************
 		     * draws all the nessasary componets on the graphics panel(Solar System)
 		     */
-		    public void paintComponent(Graphics g) {   
+		    public void paintComponent(Graphics g) { 
+		    	super.paintComponent(g); 
+		       	setDoubleBuffered(true); 
 		    	if (off) {
 		    		g.setColor(Color.black);
 		    		int size= 12;
@@ -571,27 +534,36 @@ class Explore extends JFrame{
 				               int size2=12;
 			            	   Font font2= new Font("Gugi", Font.PLAIN, size2);
 				               g.setFont(font2);
-				               int start=startingY+size+4;
+				               int start=startingY+size;
 			            	   int space=10;
 				               if (object instanceof Sun) {
-				            	   g.drawString(object.getData()[5], startingX, startingY+start+size2+space);
-				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2+space)*2);
-				            	   g.drawString("Rotational speed: "+object.getData()[2]+" km/h", startingX, startingY+start+(size2+space)*3);
-				            	   g.drawString("Axial tilt: "+object.getData()[3]+"° "+object.getData()[4], startingX, startingY+start+(size2+space)*4); 
+				            	   String[] sentances=(object.getData()[5]).split("@");
+				            	   int r=1;
+				            	   for (int i=0; i<sentances.length; i++) {
+				            		   g.drawString(sentances[i], startingX, startingY+start+size2*r);
+				            		   r++;
+				            	   }
+				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2*(r+1))+space);
+				            	   g.drawString("Rotational speed: "+object.getData()[2]+" km/h", startingX, startingY+start+(size2*(r+2))+space*2);
+				            	   g.drawString("Axial tilt: "+object.getData()[3]+"° "+object.getData()[4], startingX, startingY+start+(size2*(r+3))+space*3); 
 				               }
 				               else {
-				            	   g.drawString(object.getData()[9], startingX, startingY+start+size2+space);
-				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2+space)*2);
-				            	   g.drawString("Rotational speed: "+object.getData()[4]+" km/h", startingX, startingY+start+(size2+space)*3);
-				            	   g.drawString("Axial tilt: "+object.getData()[6]+"° "+object.getData()[7], startingX, startingY+start+(size2+space)*4);
-				            	   g.drawString("Distance from Sun: "+object.getData()[2]+" "+object.getData()[3]+" km", startingX, startingY+start+(size2+space)*5);
-				            	   g.drawString("Speed around Sun: "+object.getData()[5]+" km/s", startingX, startingY+start+(size2+space)*6);
+				            	   String[] sentances=(object.getData()[9]).split("@");
+				            	   int r=1;
+				            	   for (int i=0; i<sentances.length; i++) {
+				            		   g.drawString(sentances[i], startingX, startingY+start+size2*r);
+				            		   r++;
+				            	   }
+				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2*(r+1))+space);
+				            	   g.drawString("Rotational speed: "+object.getData()[4]+" km/h", startingX, startingY+start+(size2*(r+2))+space*2);
+				            	   g.drawString("Axial tilt: "+object.getData()[6]+"° "+object.getData()[7], startingX, startingY+start+(size2*(r+3))+space*3);
+				            	   g.drawString("Distance from Sun: "+object.getData()[2]+" "+object.getData()[3]+" km", startingX, startingY+start+(size2*(r+4))+space*4);
+				            	   g.drawString("Speed around Sun: "+object.getData()[5]+" km/s", startingX, startingY+start+(size2*(r+5))+space*5);
 				               } 							   
 						   }
 		    	      }
 		    	
 		    	}
-		         repaint();
 		    }
 	  }
 	  /** 
@@ -704,23 +676,6 @@ class Explore extends JFrame{
 		}
 	  }
 	  /** 
-	   * [TextureCheckListener.java]
-	   * @author Nicole Streltsov
-	   * The action listener for the texture check box
-	   * January 2019
-	   */
-	  class TextureCheckListener implements ActionListener{
-		  public void actionPerformed(ActionEvent e) {
-			  JCheckBox checkBox=(JCheckBox) e.getSource();
-			if (checkBox.isSelected()) {
-				texture=true;
-			}
-			else {
-				texture=false;
-			}			
-		}
-	  }
-	  /** 
 	   * [AxialCheckListener.java]
 	   * @author Nicole Streltsov
 	   * The action listener for the axial tilt check box
@@ -824,8 +779,7 @@ class Explore extends JFrame{
 				   SpaceObject object = (SpaceObject)itr.next(); 
 				   ClickArea area= new ClickArea(object, sizeAdjust.getPrevious(),  backgroundX, backgroundY); 
 				   if (area.contains(e.getX(),e.getY())) {
-					   off=false;
-					   chosen=object.getName();
+					   planetDesc.setValues(false, object.getName());
 				   }
 			  }
 	      }

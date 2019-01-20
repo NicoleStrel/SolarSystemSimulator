@@ -1,7 +1,10 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Iterator;
+import java.util.Scanner;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ColoringAttributes;
@@ -115,19 +118,18 @@ class Planet extends SpaceObject{
 		 
 		 //apearance
 		 Appearance app = new Appearance();	
-		//Color3f ambientColor=new  Color3f(0.0f, 0.0f, 0.0f);   
-		 //Color3f emissiveColor=new Color3f(0.0f, 0.5f, 1.0f);
-		 Color3f diffuseColor=new Color3f(0.0f, 0.0f, 1.0f);           // do colors later in a text file
-		 Color3f specularColor=new Color3f(1.0f, 1.0f, 1.0f);
-		 Material material=new Material( );
-		 material.setDiffuseColor(diffuseColor);
-		 material.setSpecularColor(specularColor);
-		 material.setShininess(100.0f);
-		 ColoringAttributes color= new ColoringAttributes(new  Color3f(0.0f, 0.0f, 1.0f),ColoringAttributes.NICEST);
+		 Color3f eColor = new Color3f(0.0f, 0.0f, 0.0f);
+		 Color3f sColor = new Color3f(1.0f, 1.0f, 1.0f);
+		 Color3f objColor = null;
+		 try {
+			objColor = readPlanetColor();
+		 } catch (FileNotFoundException e) {
+		 }
+		 Material m = new Material(objColor, eColor, objColor, sColor, 100.0f);
+		 m.setLightingEnable(true);
 		 
 		 //add sphere
-		 app.setMaterial(material);
-		 app.setColoringAttributes(color);
+		 app.setMaterial(m);
 		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 120,app); 
 		 
 		 //transform
@@ -139,6 +141,22 @@ class Planet extends SpaceObject{
 		 TransformGroup tg = new TransformGroup(transform);
 		 tg.addChild(sphere);
 		 return tg;
+	 }
+	 private Color3f readPlanetColor() throws FileNotFoundException{
+		 File fileIn = new File("planetColors3D.txt");
+		 Scanner textIn = new Scanner(fileIn); 
+		 Color3f planetColor=null;
+		 
+		 while(textIn.hasNext()){
+			 String line= textIn.nextLine();
+			 String [] data= line.split("[|]");
+			 if (data[0].equals(getName())){
+				 String [] values =data[1].split(",");
+				 planetColor=new Color3f(Float.parseFloat(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]));     
+			 }
+		 }
+		 textIn.close();
+		 return planetColor;
 	 }
 
 }

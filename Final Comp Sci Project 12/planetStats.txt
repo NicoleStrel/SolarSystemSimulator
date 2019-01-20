@@ -1,9 +1,9 @@
-Earth|6371|124.6|M|1674|29.78|23.45|CW|0,0,255|This is the planet description
-Neptune|64622|4.495|B|9719|5.43|28.32|CW|128,0,128|This is the planet description
-Venus|6052|108.2|M|6.52|35.02|177.36|C|128,128,128|This is the planet description
-Mercury|2440|57.91|M|10.83|47.87|0|CW|255,255,255|This is the planet description
-Mars|3390|227.9|M|866|24.077|25.19|CW|255,0,0|This is the planet description
-Uranus|25362|2.871|B|14794|6.81|97.77|C|0,255,255|This is the planet description
-Saturn|58232|1.434|B|36840|9.69|26.73|CW|255,165,0|This is the planet description
-Jupiter|69911|778.5|M|45583|13.07|3.13|CW|234,192,134|This is the planet description
-Sun|695508|107000|7.25|CW|This is the sun description
+Earth|6371|124.6|M|1674|29.78|23.45|CW|0,0,255|Formed over 4.5 billion years ago, the @Earth is the only planet that is known to@harbor life. Being the third planet from the@sun, its gravity interacts with the sun and@the moon, it’s only natural satellite.
+Neptune|64622|4.495|B|9719|5.43|28.32|CW|128,0,128|Neptune is the farthest known planet away@from the sun and the only planet in the@solar system found by mathematical@prediction rather than by empirical@observation. It is named after the Roman@god of the sea, Neptune.
+Venus|6052|108.2|M|6.52|35.02|177.36|C|128,128,128|Venus is the  second planet away from the@sun and has no natural satellites. It has@the longest rotation period than any@other planet and rotates clockwise,@unlike most planets.
+Mercury|2440|57.91|M|10.83|47.87|0|CW|255,255,255|Mercury is the smallest and closest planet@to the sun. Its orbital period is the@shortest and is named after the Roman deity@Mercury, the messenger of the gods. 
+Mars|3390|227.9|M|866|24.077|25.19|CW|255,0,0|Mars is the fourth planet from the sun and@the second smallest after Mercury. It’s@known as the "Red Planet” because of@the reddish iron oxide prevalent on its@surface giving it a reddish appearance.
+Uranus|25362|2.871|B|14794|6.81|97.77|C|0,255,255|Uranus is the seventh planet from the sun@and has and interior mainly composed of@ices and rock. It has the coldest planetary@atmosphere in the solar system, with a@minimum temperature of −224 °C.
+Saturn|58232|1.434|B|36840|9.69|26.73|CW|255,165,0|Saturn is the second largest planet,@the sixth planet from the sun and has at@least 62 known moons. Its ring system is@composed mostly of ice particles, with a@smaller amount of rocky debris and dust.
+Jupiter|69911|778.5|M|45583|13.07|3.13|CW|234,192,134|Jupiter is the largest planet in the solar @system and the fifth planet away from the@sun. A day on Jupiter lasts only 9 hours and@55 minutes, but takes 12 years to orbit@the sun.
+Sun|695508|107000|7.25|CW|The sun is the center of our universe-@a hot ball of glowing gases and a dwarf star@circling the milky way. Its gravity@holds the solar system together: from the@largest planets, pieces of debris, and little@specs like us.

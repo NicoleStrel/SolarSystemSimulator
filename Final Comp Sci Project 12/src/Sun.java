@@ -29,40 +29,22 @@ class Sun extends SpaceObject{
 		  
 		 g2.setColor(color);
 		 g2.fillOval(centerX+backgroundX,centerY-radius2+backgroundY,radius2*2, radius2*2);		 
-		
-		 /*
-		 Graphics2D g2d = bi.createGraphics();
-		 Image sunTexture = null;
-		 try {sunTexture = ImageIO.read(new File("images/sunTexture.jpg"));} catch (IOException e) {}
-		 TexturePaint tp = new TexturePaint();
-		    // Now fill the round rectangle.
-		    g2.setPaint(tp)
-		    */
-		 //with texture
-		 /*		
-		 //Image sunResized = sunTexture.getScaledInstance(4000/divisor, 2000/divisor, Image.SCALE_DEFAULT);
-		  g.setClip(new Ellipse2D.Float(centerX+backgroundX, centerY-radius2+backgroundY, radius2*2, radius2*2));   
-		  g.drawImage(sunTexture,centerX+backgroundX, centerY-radius2+backgroundY, null);
-		
-		*/
 		  
 	}
 	 public TransformGroup renderSphere(int backgroundX, int backgroundY, int divisor) { 	
 		 double radius2=radius/divisor;
 		 
 		 //apearance
-		 Appearance app = new Appearance();	
-		 Color3f ambientColor=new  Color3f(0.0f, 0.0f, 0.0f);   
-		 Color3f emissiveColor=new Color3f(0.0f, 0.5f, 1.0f);
-		 Color3f diffuseColor=new Color3f(0.0f, 0.0f, 1.0f);           // do colors later in a text file
-		 Color3f specularColor=new Color3f(1.0f, 1.0f, 1.0f);
-		 Material material=new Material(ambientColor,emissiveColor,diffuseColor,specularColor,100.0f);
-		 ColoringAttributes color= new ColoringAttributes(new  Color3f(0.0f, 0.0f, 1.0f),ColoringAttributes.NICEST);
-		 
+		 Appearance app = new Appearance();			
+		 Color3f eColor = new Color3f(0.0f, 0.0f, 0.0f);
+		 Color3f sColor = new Color3f(1.0f, 1.0f, 1.0f);
+		 Color3f objColor = new Color3f(1.0f, 1.0f, 0.0f);	 
+		 Material m = new Material(objColor, eColor, objColor, sColor, 100.0f);
+		 m.setLightingEnable(true);
+		 		 
 		 //add sphere
-		 app.setMaterial(material);
-		 app.setColoringAttributes(color);
-		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 120,app); 
+		 app.setMaterial(m);
+		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 80,app); 
 		 
 		 //transform
 		 Transform3D transform= new Transform3D();
