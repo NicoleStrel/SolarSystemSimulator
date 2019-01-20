@@ -72,4 +72,10 @@ abstract class SpaceObject{
 	public String [] getData() {
 		return this.data;
 	}
+	 //pixels to millipoints
+	 public float convertToFloat(double number) {
+		 int resolution= Toolkit.getDefaultToolkit().getScreenResolution();
+		 double conversion=(number*72)/(resolution*1000);
+		 return (float) conversion;
+	 }
 }

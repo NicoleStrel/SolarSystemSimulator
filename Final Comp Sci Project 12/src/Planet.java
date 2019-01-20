@@ -1,8 +1,18 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.util.Iterator;
 
+import javax.media.j3d.Appearance;
+import javax.media.j3d.ColoringAttributes;
+import javax.media.j3d.Material;
+import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
 import javax.swing.JFrame;
+import javax.vecmath.Color3f;
+import javax.vecmath.Vector3f;
+
+import com.sun.j3d.utils.geometry.Sphere;
 
 class Planet extends SpaceObject{
 	protected double distanceFromSun; //pixels
@@ -99,4 +109,36 @@ class Planet extends SpaceObject{
 		g.setColor(Color.white);
 		g.drawLine(x1+backgroundX+orbitalMovement.getOrbitalX(), y1+backgroundY+orbitalMovement.getOrbitalY(), x2+backgroundX+orbitalMovement.getOrbitalX(), y2+backgroundY+orbitalMovement.getOrbitalY());
 	}
+	
+	 public TransformGroup renderSphere(int backgroundX, int backgroundY, int divisor) { 	
+		 double radius2=radius/divisor;
+		 
+		 //apearance
+		 Appearance app = new Appearance();	
+		//Color3f ambientColor=new  Color3f(0.0f, 0.0f, 0.0f);   
+		 //Color3f emissiveColor=new Color3f(0.0f, 0.5f, 1.0f);
+		 Color3f diffuseColor=new Color3f(0.0f, 0.0f, 1.0f);           // do colors later in a text file
+		 Color3f specularColor=new Color3f(1.0f, 1.0f, 1.0f);
+		 Material material=new Material( );
+		 material.setDiffuseColor(diffuseColor);
+		 material.setSpecularColor(specularColor);
+		 material.setShininess(100.0f);
+		 ColoringAttributes color= new ColoringAttributes(new  Color3f(0.0f, 0.0f, 1.0f),ColoringAttributes.NICEST);
+		 
+		 //add sphere
+		 app.setMaterial(material);
+		 app.setColoringAttributes(color);
+		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 120,app); 
+		 
+		 //transform
+		 double distance =distanceFromSun/divisor;
+		 //System.out.println (getName()+"   -   " +distance);
+		 Transform3D transform= new Transform3D();
+		 Vector3f vector = new Vector3f(convertToFloat(centerX-radius2-distance+backgroundX), 0.0f , 0.0f);   
+		 transform.set(vector);
+		 TransformGroup tg = new TransformGroup(transform);
+		 tg.addChild(sphere);
+		 return tg;
+	 }
+
 }

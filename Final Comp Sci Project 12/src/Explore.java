@@ -23,14 +23,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.media.j3d.Appearance;
+import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
+import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.Material;
+import javax.media.j3d.Node;
+import javax.media.j3d.PointLight;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -49,6 +55,9 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.vecmath.Color3f;
+import javax.vecmath.Point3d;
+import javax.vecmath.Point3f;
+import javax.vecmath.Vector3f;
 
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
@@ -70,7 +79,7 @@ class Explore extends JFrame{
     private JPanel controlBar;
     public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private ArrayList<SpaceObject> spaceObjects= new ArrayList<SpaceObject>();
-    private static final double ratioD=Math.pow(10,12)*2; 
+    private static final double ratioD=Math.pow(10,12); 
     private static final double  ratioP=Math.pow(10, 8)*7;     
     private static final double ratioS=Math.pow(10, 9)*2;
     private int backgroundX=0;
@@ -96,7 +105,7 @@ class Explore extends JFrame{
 	    this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 	    this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.X_AXIS));
 	    //this.setUndecorated(true);  
-	    //this.setResizable(false);
+	   //this.setResizable(false);
 	    
 	    
 	    //------solar system panel-------
@@ -296,7 +305,7 @@ class Explore extends JFrame{
 	  private void replacePanel(){
 		   //int index = explore.getComponentZOrder(solarSystem);
 		   //System.out.println("AAA -> " + index);
-		   System.out.println( "ASS " + this.getContentPane().getComponentCount());
+		   //System.out.println( "ASS " + this.getContentPane().getComponentCount());
 		   this.getContentPane().remove(solarSystem);
 		   //this.getContentPane().remove(controlBar);
 		   //this.getContentPane().removeAll();
@@ -438,42 +447,80 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	  class ThreeDPanel extends JPanel{
-			private JPanel threeD;
+			private JPanel threeDimension;
 			private Clock clock;
 			private FrameRate frameRate;
+			private SimpleUniverse universe;
+			private BranchGroup group;
 			
-			public ThreeDPanel() {
-				this.setBackground(Color.BLUE);	 
+			public ThreeDPanel() { 
 			    this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
 			    this.setMinimumSize(this.getPreferredSize());
 			    this.setMaximumSize(this.getPreferredSize());
 			    this.setLayout(new BorderLayout());
 			    clock=new Clock();
 			    frameRate=new FrameRate();
-			    this.setUp();
+			    
+			   //set up graphics
+			    GraphicsConfiguration config= SimpleUniverse.getPreferredConfiguration();
+		        Canvas3D canvas= new Canvas3D(config);
+		        universe = new SimpleUniverse(canvas);
+				group = new BranchGroup();
+				group.setCapability(BranchGroup.ALLOW_DETACH);
+				this.add ("Center", canvas);
+				universe.getViewingPlatform().setNominalViewingTransform();
+				universe.getViewer().getView().setBackClipDistance(100.0);				
+				
+				Thread t = new Thread(new Runnable() { 
+					public void run() { 
+						while (threeD) {
+							clock.update();
+							frameRate.update();
+							paintComponent(canvas); 
+							try{ Thread.sleep((long) clock.getElapsedTime());} catch (Exception exc){}
+						}
+					}
+				}); 
+			    t.start();
+			
 
 			}
-			public void setUp(){
-		         GraphicsConfiguration config= SimpleUniverse.getPreferredConfiguration();
-		         Canvas3D canvas= new Canvas3D(config);
-				 BranchGroup group = new BranchGroup();
-				 group.addChild(drawSphere());
-				 this.add ("Center", canvas);
-				 SimpleUniverse universe = new SimpleUniverse(canvas);
-				 universe.getViewingPlatform().setNominalViewingTransform();
-				 universe.getViewer().getView().setBackClipDistance(100.0);
-				 universe.addBranchGraph(group);
-				 canvas.setFocusable(true);
-				 canvas.requestFocus();
+			public void paintComponent(Canvas3D canvas){
+				canvas.setDoubleBufferEnable(true);
+				group.detach();
+				BranchGroup temp = new BranchGroup ();
+				temp.setCapability(BranchGroup.ALLOW_DETACH);
+				
+				//add planets and stuff here
+				Iterator<SpaceObject> itr=spaceObjects.iterator();
+			    while (itr.hasNext()) {
+				   SpaceObject object = (SpaceObject)itr.next();   
+				   if (object instanceof Sun) {
+					   temp.addChild(((Sun)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious()));
+					   temp.addChild(createSphereLight());
+					   //rotational move
+					   
+				   }
+				   else {
+					   temp.addChild(((Planet)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious()));
+					   temp.addChild(createSphereLight());
+					   //orbital move
+					   //rotational move
+				   }
+				 }	
+			    group=temp;
+			    universe.addBranchGraph(group);
+			    canvas.setFocusable(true);
+				canvas.getView().repaint();
 				
 			}
-			 public Sphere drawSphere() { 
-				 //add sphere
-				 Appearance app = new Appearance();		 
-				 ColoringAttributes color= new ColoringAttributes(new Color3f(1.0f, 0.0f, 0.0f), 1);
-				 app.setColoringAttributes(color);
-				 Sphere sphere= new Sphere(0.3f, Sphere.GENERATE_NORMALS, 120,app);
-				 return sphere;
+			 private DirectionalLight createSphereLight() {
+				 Color3f sphereLightColor =new Color3f(1.0f, 1.0f, 1.0f);
+				 Vector3f sphereLightDirection= new Vector3f(-1.0f, -0.5f, -0.5f);
+				 BoundingSphere bounds= new BoundingSphere(new Point3d(0,0,0), 100);
+				 DirectionalLight sphereLight= new DirectionalLight(sphereLightColor,sphereLightDirection);
+				 sphereLight.setInfluencingBounds(bounds);
+				 return sphereLight;
 			 }
 		}
 	  /** 
