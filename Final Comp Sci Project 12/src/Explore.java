@@ -6,6 +6,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
@@ -14,6 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -53,6 +56,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -405,6 +409,7 @@ class Explore extends JFrame{
 			private FrameRate frameRate;
 			private SimpleUniverse universe;
 			private Canvas3D canvas;
+			private BranchGroup root;
 			
 			public ThreeDPanel() { 
 			    this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
@@ -414,9 +419,12 @@ class Explore extends JFrame{
 			    clock=new Clock();
 			    frameRate=new FrameRate();
 			    
+			    root= new BranchGroup();
+			    root.setCapability(BranchGroup.ALLOW_DETACH);
 			   //set up graphics
 			    GraphicsConfiguration config= SimpleUniverse.getPreferredConfiguration();
 		        canvas= new Canvas3D(config);
+		        getContentPane().add(canvas);  //this
 		        //canvas.setFocusable(true);
 				//canvas.getView().repaint();
 		        universe = new SimpleUniverse(canvas);
@@ -426,21 +434,31 @@ class Explore extends JFrame{
 				//universe.getViewer().getView().setBackClipDistance(100.0);							
 				universe.addBranchGraph(scene);
 				
-			}
-			private void convert(int number) {
-				//maybe
-			}
-			
-			private BranchGroup createSceneGraph(){	
-				BranchGroup root = new BranchGroup();
+				GlassPane pane = new GlassPane();
+				explore.setGlassPane(pane);
 				
+			}
+			public void refreshValues() {
+				root.detach();
+				//set transformations to null
+				Iterator<SpaceObject> itr=spaceObjects.iterator();
+			    while (itr.hasNext()) {
+			       SpaceObject object = (SpaceObject)itr.next(); 
+			       object.resetTransforms();
+			    }
+				BranchGroup scene = createSceneGraph();
+				universe.addBranchGraph(scene);
+			}
+			private BranchGroup createSceneGraph(){	
+				BranchGroup temp = new BranchGroup();
+	   
 				//size scaling
 			    TransformGroup sceneGraph = new TransformGroup();
 			    sceneGraph.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 			    //Transform3D tsize = new Transform3D();
 			    //tsize.setScale(sizeAdjust.getPrevious()/100);
 			    //sceneGraph.setTransform(tsize);
-			    root.addChild(sceneGraph);
+			    temp.addChild(sceneGraph);
 			    
 			    //bounds for lighting
 			    BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0),100.0);
@@ -471,27 +489,61 @@ class Explore extends JFrame{
 					   TransformGroup target=spaceObjects.get(8).getTransformGroup();
 					   RotationInterpolator rotator= ((Planet)object).addOrbital(target);
 				       rotator.setSchedulingBounds(bounds);
+				       //((Sun)spaceObjects.get(8)).addChildT(rotator);
 					  
 				   }
 				 }	
-
+			     temp.setCapability(BranchGroup.ALLOW_DETACH);
+			     root=temp;
 				 root.compile();
 				 return root;
 				
 			}
-			 private DirectionalLight createSphereLight() {
-				 //ambient light >light present in room
-				 
-				 
-				 
-				 Color3f sphereLightColor =new Color3f(1.0f, 1.0f, 1.0f);
-				 Vector3f sphereLightDirection= new Vector3f(-1.0f, -0.5f, -0.5f);
-				 BoundingSphere bounds= new BoundingSphere(new Point3d(0,0,0), 100);
-				 DirectionalLight sphereLight= new DirectionalLight(sphereLightColor,sphereLightDirection);
-				 sphereLight.setInfluencingBounds(bounds);
-				 return sphereLight;
-			 }
+			//----------inner class--------------
+			class GlassPane extends JComponent implements ItemListener {
+				GlassPane(){
+					  this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
+					  this.setMinimumSize(this.getPreferredSize());
+					  this.setMaximumSize(this.getPreferredSize());
+				}
+				public void itemStateChanged(ItemEvent e) {
+					//setVisible(e.getStateChange() == ItemEvent.SELECTED);
+					setVisible(true);
+					
+				}
+				public void paintComponent(Graphics g) {
+					System.out.println("hi");
+			    	 g.setColor(Color.white);
+				   	 g.drawString("Note: Planet sizes are inflated (not exactly to scale)", 20, 30);  
+				   	 frameRate.draw(g,20,45);
+				   	 BufferedImage arrowKeys = null;
+				     try {arrowKeys = ImageIO.read(new File("images/arrowKeys.png"));} catch (IOException e) {}
+				     g.drawImage(arrowKeys,15, (int)screenSize.getHeight()-100, null);
+				     g.drawString("View Controls: ", 20, (int)screenSize.getHeight()-90);
+				     BufferedImage soundOn = null;
+				     try {soundOn = ImageIO.read(new File("images/volumeOn.png"));} catch (IOException e) {}
+				     BufferedImage soundOff = null;
+				     try {soundOff = ImageIO.read(new File("images/volumeOff.png"));} catch (IOException e) {}
+				     if (on) {
+				    	g.drawImage(soundOn, (int)screenSize.getWidth()-330, 5, null);
+				     }
+				     else {
+				    	 g.drawImage(soundOff, (int)screenSize.getWidth()-330, 5, null);
+				     }
+				     if (play) {
+				    	 g.fillRect((int)screenSize.getWidth()-365, 5, 5, 20);
+				    	 g.fillRect((int)screenSize.getWidth()-355,5, 5, 20);
+				     }
+				     else {
+				    	 int [] xPoints= {(int)screenSize.getWidth()-365, (int)screenSize.getWidth()-365, (int)screenSize.getWidth()-350};
+				    	 int [] yPoints= {5,25,15};
+				    	 g.fillPolygon(xPoints, yPoints,3);
+				     }
+				}
+				  
+			  }
 		}
+	  
 	 
 	  /** 
 	   * [SizeAdjustmentListener.java]
@@ -526,6 +578,9 @@ class Explore extends JFrame{
 			 if (type==AdjustmentEvent.TRACK) {
 				 int currentValue = sizeControl.getValue();
 				 previous=currentValue;
+				 if (threeD) {
+					 tdpanel.refreshValues();
+				 }
 			 }		
 		}
 	  }
@@ -630,6 +685,7 @@ class Explore extends JFrame{
 		      JComboBox <String> cb = (JComboBox<String>)e.getSource();
 		       String dimension = (String)cb.getSelectedItem();
 		       if (dimension.equals("Two-Dimensional")) {
+		    	   threeD=false;
 		    	   explore.getContentPane().removeAll();
 				   explore.getContentPane().add(solarSystem);
 				   explore.getContentPane().add(controlBar);	
@@ -637,6 +693,7 @@ class Explore extends JFrame{
 				   explore.repaint();
 		       }
 		       else if(dimension.equals("Three-Dimensional")) {
+		    	   threeD=true;
 		    	   explore.getContentPane().removeAll();
 				   explore.getContentPane().add(tdpanel);
 				   explore.getContentPane().add(controlBar);

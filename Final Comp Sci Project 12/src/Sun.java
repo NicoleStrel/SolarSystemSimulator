@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.Material;
+import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.SpotLight;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -26,6 +27,9 @@ import com.sun.j3d.utils.geometry.Sphere;
 class Sun extends SpaceObject{
 	Sun(String name, double speedRotates, double angleOfTilt, String directionRotates, double radius, Color color, String [] data){
 		super(name, speedRotates, angleOfTilt, directionRotates, radius, color, data);
+	}
+	public void addChildT(RotationInterpolator rotator) {
+		getTransformGroup().addChild(rotator);
 	}
 	public void drawSun(Graphics g2, int backgroundX, int backgroundY, int divisor) {
 		 int radius2=(int)(radius/divisor);

@@ -31,7 +31,9 @@ abstract class SpaceObject{
 		this.radius=radius;
 		this.color=color;
 		this.data=data;
-		
+		resetTransforms();
+	}
+	public void resetTransforms() {
 		transformAll = new TransformGroup();
 		transformAll.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		innerTransform = new TransformGroup();
