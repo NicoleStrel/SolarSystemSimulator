@@ -28,7 +28,9 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
+import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
+import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
@@ -37,6 +39,10 @@ import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PointLight;
+import javax.media.j3d.RotationInterpolator;
+import javax.media.j3d.SpotLight;
+import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -72,6 +78,7 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
 class Explore extends JFrame{
 	//declare variables
 	private JFrame explore;
+	private ThreeDPanel tdpanel;
 	private SpeedAdjustmentListener speedAdjust;	
 	private SizeAdjustmentListener sizeAdjust;
     private SolarSystem solarSystem;
@@ -195,7 +202,7 @@ class Explore extends JFrame{
 		controlBar.add(Box.createRigidArea(new Dimension(0,40)));
 		
 	    //---graphics panel-----
-	    planetDesc = new PlanetDescription(true, null);
+	    planetDesc = new PlanetDescription(true, null, spaceObjects);
 	    controlBar.add(planetDesc);
 	    
 	    //---------audio-------------
@@ -223,7 +230,8 @@ class Explore extends JFrame{
 	    this.addKeyListener(keyListener);
 	    MyMouseListener mouseListener = new MyMouseListener();
 	    
-	    //set up 3d panel
+	    //set up 3d panel beforehand- takes a while to render
+	    tdpanel = new ThreeDPanel();
 	    
 	    this.addMouseListener(mouseListener);
 	    this.requestFocusInWindow(); 
@@ -277,15 +285,6 @@ class Explore extends JFrame{
 		  double convertRatio= 3779575.17575025;
 		  return value*convertRatio;
 	  }
-	  private void  checkExists() {
-		   if (threeD) {
-			   this.getContentPane().remove(solarSystem);
-			   ThreeDPanel tdpanel = new ThreeDPanel();
-			   this.getContentPane().add(tdpanel, 0);		   
-			   revalidate();
-			   repaint();  
-		   }
-	  }
 
 	 /** ----------------------------- INNER CLASSES ------------------------------ **/
 	  /** 
@@ -316,8 +315,6 @@ class Explore extends JFrame{
 	    	 super.paintComponent(g); 
 	       	 setDoubleBuffered(true); 
 	       	 
-	       	 //check if exists
-	       	 checkExists();
 	       	 //update
 	 		 clock.update();
 			 frameRate.update();
@@ -407,7 +404,7 @@ class Explore extends JFrame{
 			private Clock clock;
 			private FrameRate frameRate;
 			private SimpleUniverse universe;
-			private BranchGroup group;
+			private Canvas3D canvas;
 			
 			public ThreeDPanel() { 
 			    this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
@@ -419,54 +416,74 @@ class Explore extends JFrame{
 			    
 			   //set up graphics
 			    GraphicsConfiguration config= SimpleUniverse.getPreferredConfiguration();
-		        Canvas3D canvas= new Canvas3D(config);
+		        canvas= new Canvas3D(config);
+		        //canvas.setFocusable(true);
+				//canvas.getView().repaint();
 		        universe = new SimpleUniverse(canvas);
-				group = new BranchGroup();
-				group.setCapability(BranchGroup.ALLOW_DETACH);
 				this.add ("Center", canvas);
+				BranchGroup scene = createSceneGraph();
 				universe.getViewingPlatform().setNominalViewingTransform();
-				universe.getViewer().getView().setBackClipDistance(100.0);				
-				
-				//to do:
-				//add all the planets and lighting 
-				//add evreything();
-				//canvas.setVisible(false); //once you click the graphics panel, say true;
-                
-				//for now
-				paintComponent(canvas);
-				
+				//universe.getViewer().getView().setBackClipDistance(100.0);							
+				universe.addBranchGraph(scene);
 				
 			}
-			public void paintComponent(Canvas3D canvas){
-				canvas.setDoubleBufferEnable(true);
-				group.detach();
-				BranchGroup temp = new BranchGroup ();
-				temp.setCapability(BranchGroup.ALLOW_DETACH);
+			private void convert(int number) {
+				//maybe
+			}
+			
+			private BranchGroup createSceneGraph(){	
+				BranchGroup root = new BranchGroup();
 				
+				//size scaling
+			    TransformGroup sceneGraph = new TransformGroup();
+			    sceneGraph.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+			    //Transform3D tsize = new Transform3D();
+			    //tsize.setScale(sizeAdjust.getPrevious()/100);
+			    //sceneGraph.setTransform(tsize);
+			    root.addChild(sceneGraph);
+			    
+			    //bounds for lighting
+			    BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0),100.0);
+			    Background bg = new Background();
+			    bg.setApplicationBounds(bounds);
+			    sceneGraph.addChild(bg);
+			    
+			    //AmbientLight aLgt = new AmbientLight(new Color3f(0.0f, 0.0f, 0.0f));
+			    //aLgt.setInfluencingBounds(bounds);
+			    //sceneGraph.addChild(aLgt);
+			    
 				//add planets and stuff here
 				Iterator<SpaceObject> itr=spaceObjects.iterator();
 			    while (itr.hasNext()) {
-				   SpaceObject object = (SpaceObject)itr.next();   
+			       SpaceObject object = (SpaceObject)itr.next(); 
+			       sceneGraph.addChild(object.getTransformGroup());
 				   if (object instanceof Sun) {
-					   temp.addChild(((Sun)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious()));
-					   temp.addChild(createSphereLight());
-					   //rotational move
+					   ((Sun)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious());//backgroundY is not used  for now
+					   ((Sun)object).startingPos(backgroundX,backgroundY,sizeAdjust.getPrevious());
+					   SpotLight light =((Sun)object).addSpotLight(backgroundX,backgroundY,sizeAdjust.getPrevious());
+					   light.setInfluencingBounds(bounds);
 					   
 				   }
 				   else {
-					   temp.addChild(((Planet)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious()));
-					   temp.addChild(createSphereLight());
-					   //orbital move
-					   //rotational move
+					   ((Planet)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious());
+					   ((Planet)object).startingPos(backgroundX,backgroundY,sizeAdjust.getPrevious());
+					   //rotation
+					   TransformGroup target=spaceObjects.get(8).getTransformGroup();
+					   RotationInterpolator rotator= ((Planet)object).addOrbital(target);
+				       rotator.setSchedulingBounds(bounds);
+					  
 				   }
 				 }	
-			    group=temp;
-			    universe.addBranchGraph(group);
-			    canvas.setFocusable(true);
-				canvas.getView().repaint();
+
+				 root.compile();
+				 return root;
 				
 			}
 			 private DirectionalLight createSphereLight() {
+				 //ambient light >light present in room
+				 
+				 
+				 
 				 Color3f sphereLightColor =new Color3f(1.0f, 1.0f, 1.0f);
 				 Vector3f sphereLightDirection= new Vector3f(-1.0f, -0.5f, -0.5f);
 				 BoundingSphere bounds= new BoundingSphere(new Point3d(0,0,0), 100);
@@ -475,97 +492,7 @@ class Explore extends JFrame{
 				 return sphereLight;
 			 }
 		}
-	  /** 
-	   * [PlanetDescription.java]
-	   * @author Nicole Streltsov
-	   * A class (JPanel) that contains the planet description
-	   * January 2019
-	   */
-	  class PlanetDescription  extends JPanel {
-		  private int startingX=40;
-		  private int startingY=20;
-		  private boolean off;
-		  private String chosen;
-		  
-		  PlanetDescription(boolean off, String chosen){
-			  this.setBackground(Color.white);	 
-		      this.setPreferredSize(new Dimension(300,(int)screenSize.getHeight()-400));
-		      this.setMinimumSize(this.getPreferredSize());
-		      this.setMaximumSize(this.getPreferredSize());
-		      this.off=off;
-		      this.chosen=chosen;
-		  }
-		  public void setValues(boolean off, String chosen) {
-			  this.off=off;
-			  this.chosen=chosen;
-			  repaint();
-		  }
-		  /** paintComponent *******************************************
-		     * draws all the nessasary componets on the graphics panel(Solar System)
-		     */
-		    public void paintComponent(Graphics g) { 
-		    	super.paintComponent(g); 
-		       	setDoubleBuffered(true); 
-		    	if (off) {
-		    		g.setColor(Color.black);
-		    		int size= 12;
-	                Font font= new Font("Gugi", Font.PLAIN, size);
-	                g.setFont(font); 
-		    		g.drawString("Click a planet to view it's information.", startingX, startingY);
-		    	}
-		    	else {
-			        //find chosen planet
-		    		 Iterator<SpaceObject> itr=spaceObjects.iterator();
-					  while (itr.hasNext()) {
-						   SpaceObject object = (SpaceObject)itr.next();
-						   if (object.getName().equals(chosen)) {
-							   g.setColor(Color.black);
-							   g.drawLine(0, 0, 300, 0);
-							   //name
-							   int size= 40;
-				               Font font= new Font("Gugi", Font.PLAIN, size);
-				               g.setFont(font);
-				               g.drawString(object.getName(), startingX, startingY+size);
-					           BufferedImage picture = null;
-							   try {picture = ImageIO.read(new File("images/planets/"+object.getName()+".png"));} catch (IOException e) {}
-							   g.drawImage(picture,startingX+5+(object.getName().length()*25), startingY, null);
-				               
-				               //stats
-				               int size2=12;
-			            	   Font font2= new Font("Gugi", Font.PLAIN, size2);
-				               g.setFont(font2);
-				               int start=startingY+size;
-			            	   int space=10;
-				               if (object instanceof Sun) {
-				            	   String[] sentances=(object.getData()[5]).split("@");
-				            	   int r=1;
-				            	   for (int i=0; i<sentances.length; i++) {
-				            		   g.drawString(sentances[i], startingX, startingY+start+size2*r);
-				            		   r++;
-				            	   }
-				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2*(r+1))+space);
-				            	   g.drawString("Rotational speed: "+object.getData()[2]+" km/h", startingX, startingY+start+(size2*(r+2))+space*2);
-				            	   g.drawString("Axial tilt: "+object.getData()[3]+"° "+object.getData()[4], startingX, startingY+start+(size2*(r+3))+space*3); 
-				               }
-				               else {
-				            	   String[] sentances=(object.getData()[9]).split("@");
-				            	   int r=1;
-				            	   for (int i=0; i<sentances.length; i++) {
-				            		   g.drawString(sentances[i], startingX, startingY+start+size2*r);
-				            		   r++;
-				            	   }
-				            	   g.drawString("Radius: "+object.getData()[1]+" km", startingX,  startingY+start+(size2*(r+1))+space);
-				            	   g.drawString("Rotational speed: "+object.getData()[4]+" km/h", startingX, startingY+start+(size2*(r+2))+space*2);
-				            	   g.drawString("Axial tilt: "+object.getData()[6]+"° "+object.getData()[7], startingX, startingY+start+(size2*(r+3))+space*3);
-				            	   g.drawString("Distance from Sun: "+object.getData()[2]+" "+object.getData()[3]+" km", startingX, startingY+start+(size2*(r+4))+space*4);
-				            	   g.drawString("Speed around Sun: "+object.getData()[5]+" km/s", startingX, startingY+start+(size2*(r+5))+space*5);
-				               } 							   
-						   }
-		    	      }
-		    	
-		    	}
-		    }
-	  }
+	 
 	  /** 
 	   * [SizeAdjustmentListener.java]
 	   * @author Nicole Streltsov
@@ -703,10 +630,18 @@ class Explore extends JFrame{
 		      JComboBox <String> cb = (JComboBox<String>)e.getSource();
 		       String dimension = (String)cb.getSelectedItem();
 		       if (dimension.equals("Two-Dimensional")) {
-					  threeD=false;
+		    	   explore.getContentPane().removeAll();
+				   explore.getContentPane().add(solarSystem);
+				   explore.getContentPane().add(controlBar);	
+				   explore.revalidate();
+				   explore.repaint();
 		       }
 		       else if(dimension.equals("Three-Dimensional")) {
-					  threeD=true;
+		    	   explore.getContentPane().removeAll();
+				   explore.getContentPane().add(tdpanel);
+				   explore.getContentPane().add(controlBar);
+				   explore.revalidate();
+				   explore.repaint();
 		       }
 		    }
 	  }

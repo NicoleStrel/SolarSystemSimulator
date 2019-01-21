@@ -6,13 +6,16 @@ import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Scanner;
 
+import javax.media.j3d.Alpha;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.Material;
+import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import com.sun.j3d.utils.geometry.Sphere;
@@ -21,6 +24,7 @@ class Planet extends SpaceObject{
 	protected double distanceFromSun; //pixels
 	private double speedRotateAroundSun; //pixels/s
 	private OrbitalMove orbitalMovement;
+
 	
 	Planet(String name, double speedRotates, double angleOfTilt, String directionRotates,double radius, Color color, double distanceFromSun, double speedRotateAroundSun, OrbitalMove orbitalMovement, String  [] data){
 		super(name, speedRotates, angleOfTilt, directionRotates, radius, color, data);
@@ -113,7 +117,7 @@ class Planet extends SpaceObject{
 		g.drawLine(x1+backgroundX+orbitalMovement.getOrbitalX(), y1+backgroundY+orbitalMovement.getOrbitalY(), x2+backgroundX+orbitalMovement.getOrbitalX(), y2+backgroundY+orbitalMovement.getOrbitalY());
 	}
 	
-	 public TransformGroup renderSphere(int backgroundX, int backgroundY, int divisor) { 	
+	 public void renderSphere(int backgroundX, int backgroundY, int divisor) { 	
 		 double radius2=radius/divisor;
 		 
 		 //apearance
@@ -128,19 +132,26 @@ class Planet extends SpaceObject{
 		 Material m = new Material(objColor, eColor, objColor, sColor, 100.0f);
 		 m.setLightingEnable(true);
 		 
-		 //add sphere
+		 //sphere
 		 app.setMaterial(m);
 		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 120,app); 
-		 
-		 //transform
-		 double distance =distanceFromSun/divisor;
-		 //System.out.println (getName()+"   -   " +distance);
-		 Transform3D transform= new Transform3D();
-		 Vector3f vector = new Vector3f(convertToFloat(centerX-radius2-distance+backgroundX), 0.0f , 0.0f);   
-		 transform.set(vector);
-		 TransformGroup tg = new TransformGroup(transform);
-		 tg.addChild(sphere);
-		 return tg;
+		 getInnerT().addChild(sphere);
+	 }
+	 public void startingPos(int backgroundX, int backgroundY, int divisor) {
+		    Transform3D t = new Transform3D();
+		    double radius2=radius/divisor;
+		    double distance =distanceFromSun/divisor;
+		    Vector3d lPos1 = new Vector3d(convertToFloat(centerX-radius2-distance+backgroundX), backgroundY , 0.0f);
+		    t.set(lPos1);
+		    getInnerT().setTransform(t);
+	 }
+	 public RotationInterpolator addOrbital(TransformGroup target) {
+	    // defalt for now (rotate around center)
+	    Transform3D yAxis = new Transform3D();
+	    Alpha rotorAlpha = new Alpha(-1, Alpha.INCREASING_ENABLE, 0, 0, 4000,0, 0, 0, 0, 0);
+	    RotationInterpolator rotator = new RotationInterpolator(rotorAlpha,target, yAxis, 0.0f, (float) Math.PI * 2.0f);
+	    getTransformGroup().addChild(rotator);
+	    return rotator;
 	 }
 	 private Color3f readPlanetColor() throws FileNotFoundException{
 		 File fileIn = new File("planetColors3D.txt");

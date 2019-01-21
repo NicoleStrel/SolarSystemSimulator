@@ -3,6 +3,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 
+import javax.media.j3d.TransformGroup;
+
 abstract class SpaceObject{
 	protected double axialTilt; //degreees
 	private double speedRotates; //pixels/s
@@ -14,6 +16,9 @@ abstract class SpaceObject{
 	public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	public static final int centerX=(int)(screenSize.getWidth()/2);	     
 	public static final int centerY=(int)(screenSize.getHeight()/2)-100;
+	private TransformGroup transformAll;
+	private TransformGroup innerTransform;
+	
 	
 	SpaceObject(double radius){
 		this.radius=radius;
@@ -26,6 +31,11 @@ abstract class SpaceObject{
 		this.radius=radius;
 		this.color=color;
 		this.data=data;
+		
+		transformAll = new TransformGroup();
+		transformAll.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		innerTransform = new TransformGroup();
+		transformAll.addChild(innerTransform);
 	}
 	public double getAngle() {
 		return this.axialTilt;
@@ -71,6 +81,12 @@ abstract class SpaceObject{
 	}
 	public String [] getData() {
 		return this.data;
+	}
+	public TransformGroup getTransformGroup() {
+		return this.transformAll;
+	}
+	public TransformGroup getInnerT() {
+		return this.innerTransform;
 	}
 	 //pixels to millipoints
 	 public float convertToFloat(double number) {

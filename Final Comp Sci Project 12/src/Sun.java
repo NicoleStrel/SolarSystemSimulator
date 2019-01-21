@@ -12,9 +12,12 @@ import javax.imageio.ImageIO;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.Material;
+import javax.media.j3d.SpotLight;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
+import javax.vecmath.Point3f;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 import javax.xml.crypto.dsig.Transform;
 
@@ -31,7 +34,7 @@ class Sun extends SpaceObject{
 		 g2.fillOval(centerX+backgroundX,centerY-radius2+backgroundY,radius2*2, radius2*2);		 
 		  
 	}
-	 public TransformGroup renderSphere(int backgroundX, int backgroundY, int divisor) { 	
+	 public void renderSphere(int backgroundX, int backgroundY, int divisor) { 	
 		 double radius2=radius/divisor;
 		 
 		 //apearance
@@ -41,17 +44,29 @@ class Sun extends SpaceObject{
 		 Color3f objColor = new Color3f(1.0f, 1.0f, 0.0f);	 
 		 Material m = new Material(objColor, eColor, objColor, sColor, 100.0f);
 		 m.setLightingEnable(true);
+		 ColoringAttributes colorAttribute= new ColoringAttributes(objColor, ColoringAttributes.NICEST);
 		 		 
 		 //add sphere
-		 app.setMaterial(m);
+		 //app.setMaterial(m);
+		 app.setColoringAttributes(colorAttribute);
 		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 80,app); 
-		 
-		 //transform
-		 Transform3D transform= new Transform3D();
-		 Vector3f vector = new Vector3f(convertToFloat(centerX+radius2+backgroundX), 0.0f , 0.0f);   
-		 transform.set(vector);
-		 TransformGroup tg = new TransformGroup(transform);
-		 tg.addChild(sphere);
-		 return tg;
+		 getInnerT().addChild(sphere);
+	 }
+	 public void startingPos(int backgroundX, int backgroundY, int divisor) {	 
+		    Transform3D t = new Transform3D();
+		    double radius2=radius/divisor;
+		    Vector3d vector = new Vector3d(convertToFloat(centerX+radius2+backgroundX), backgroundY , 0.0f);
+		    t.set(vector);
+		    getInnerT().setTransform(t);
+	 }
+	 public SpotLight addSpotLight(int backgroundX, int backgroundY, int divisor) {
+		 double radius2=radius/divisor;
+		 Color3f color = new Color3f(1.0f, 1.0f, 0.88f);
+		 Point3f point= new  Point3f(convertToFloat(centerX+radius2+backgroundX),backgroundY , 0.0f);
+		 Vector3f vector = new Vector3f(convertToFloat(centerX+radius2+backgroundX), backgroundY , 0.0f);
+		 Point3f atten = new Point3f(1.0f, 0.0f, 0.0f);
+		 SpotLight light = new SpotLight(color,point, atten, vector,(float) Math.PI, 128.0f);
+		 getInnerT().addChild(light);
+		 return light;
 	 }
 }
