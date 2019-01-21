@@ -224,6 +224,7 @@ class Explore extends JFrame{
 	    this.pack();
 	    this.setVisible(true);
 	}
+	
 	/** readPlanetStats *******************************************
       * reads all the planet information from the text file and stores it into variables
       * @throws FileNotFoundException
@@ -399,7 +400,12 @@ class Explore extends JFrame{
 		     }
 		     count++;
 		     //repaint graphics panel
-		     repaint();
+	    	//try {
+				//Thread.currentThread().sleep(50);
+			//} catch (InterruptedException e) {
+		    //}
+	    	repaint();
+	    	
 	    }
 	  }
 	  /** 
@@ -471,9 +477,13 @@ class Explore extends JFrame{
 			    sceneGraph.addChild(bg);
 			    
 			    //main light source
-			    DirectionalLight mainLight = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(-1.0f,0.0f,1.0f));
+			    DirectionalLight mainLight = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(0.0f,0.0f,-1.0f));
 			    mainLight.setInfluencingBounds(bounds);
 			    sceneGraph.addChild(mainLight);
+			    
+			    //DirectionalLight mainLight2 = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(0.0f,0.0f,-1.0f));
+			    //mainLight.setInfluencingBounds(bounds);
+			    //sceneGraph.addChild(mainLight2);
 			    
 				//add planets and the sun
 				Iterator<SpaceObject> itr=spaceObjects.iterator();
@@ -683,9 +693,10 @@ class Explore extends JFrame{
 				   controlBar.getComponent(9).setVisible(true);
 				   controlBar.getComponent(10).setVisible(true);
 				   planetDesc.setDisplay(true);
-				   explore.getContentPane().add(controlBar);	
+				   explore.getContentPane().add(controlBar);
 				   explore.revalidate(); //must realine and repaint the frame
 				   explore.repaint();
+				   
 		       }
 		       else if(dimension.equals("Three-Dimensional")) {
 		    	   threeD=true;

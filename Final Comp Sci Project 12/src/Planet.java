@@ -125,7 +125,7 @@ class Planet extends SpaceObject{
 	  * @param integer background y coordinate 
 	  * @param the divisor value from the size adjust scroll bar
 	  */
-	public void drawAxis(Graphics g, int backgroundX, int backgroundY, int divisor) {
+	public void drawAxis(Graphics g, int divisor, int backgroundX, int backgroundY) {
 		//declare variables
 		int startingPoint=(int)(centerX-(distanceFromSun/divisor));
 		int radius2=(int)(getRadius()/divisor);

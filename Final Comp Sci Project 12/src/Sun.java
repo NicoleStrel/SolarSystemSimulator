@@ -73,13 +73,11 @@ class Sun extends SpaceObject{
 		 Color3f eColor = new Color3f(0.0f, 0.0f, 0.0f);
 		 Color3f sColor = new Color3f(1.0f, 1.0f, 1.0f);
 		 Color3f objColor = new Color3f(1.0f, 1.0f, 0.0f);	 
-		 Material m = new Material(objColor, eColor, objColor, sColor, 100.0f);
-		 m.setLightingEnable(true);
-		 //ColoringAttributes colorAttribute= new ColoringAttributes(objColor, ColoringAttributes.NICEST);
+		 Material m = new Material(objColor, eColor, objColor, sColor, 128.0f);
+		// m.setLightingEnable(true);
 		 		 
 		 //add sphere
 		 app.setMaterial(m);
-		 //app.setColoringAttributes(colorAttribute);
 		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 80,app); 
 		 getInnerT().addChild(sphere); //add the sphere to its own inner transform group
 	 }
