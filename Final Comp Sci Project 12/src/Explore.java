@@ -467,8 +467,9 @@ class Explore extends JFrame{
 			    sceneGraph.addChild(bg);
 			    
 			    //AmbientLight aLgt = new AmbientLight(new Color3f(0.0f, 0.0f, 0.0f));
-			    //aLgt.setInfluencingBounds(bounds);
-			    //sceneGraph.addChild(aLgt);
+			    DirectionalLight mainLight = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(-1.0f,0.0f,1.0f));
+			    mainLight.setInfluencingBounds(bounds);
+			    sceneGraph.addChild(mainLight);
 			    
 				//add planets and stuff here
 				Iterator<SpaceObject> itr=spaceObjects.iterator();
@@ -476,22 +477,24 @@ class Explore extends JFrame{
 			       SpaceObject object = (SpaceObject)itr.next(); 
 			       sceneGraph.addChild(object.getTransformGroup());
 				   if (object instanceof Sun) {
-					   ((Sun)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious());//backgroundY is not used  for now
+					   ((Sun)object).renderSphere(sizeAdjust.getPrevious());//backgroundY is not used  for now
 					   ((Sun)object).startingPos(backgroundX,backgroundY,sizeAdjust.getPrevious());
 					   SpotLight light =((Sun)object).addSpotLight(backgroundX,backgroundY,sizeAdjust.getPrevious());
 					   light.setInfluencingBounds(bounds);
 					   
 				   }
 				   else {
-					   ((Planet)object).renderSphere(backgroundX,backgroundY,sizeAdjust.getPrevious());
+					   ((Planet)object).renderSphere(sizeAdjust.getPrevious());
 					   ((Planet)object).startingPos(backgroundX,backgroundY,sizeAdjust.getPrevious());
 					   //rotation
-					   TransformGroup target=spaceObjects.get(8).getTransformGroup();
-					   RotationInterpolator rotator= ((Planet)object).addOrbital(target);
+					   Transform3D sunTransform =((Sun)spaceObjects.get(8)).getSunTransform(backgroundX, backgroundY,sizeAdjust.getPrevious());
+					   RotationInterpolator rotator= ((Planet)object).addOrbital(sunTransform, speedAdjust.getPrevious(), sizeAdjust.getPrevious(), spaceObjects.get(8).getRadius());
 				       rotator.setSchedulingBounds(bounds);
-				       //((Sun)spaceObjects.get(8)).addChildT(rotator);
+				       
 					  
 				   }
+				   RotationInterpolator spin=object.spinAroundAxis (speedAdjust.getPrevious(),sizeAdjust.getPrevious(), spaceObjects.get(8).getRadius());
+				   spin.setSchedulingBounds(bounds);
 				 }	
 			     temp.setCapability(BranchGroup.ALLOW_DETACH);
 			     root=temp;
@@ -619,6 +622,9 @@ class Explore extends JFrame{
 			 if (type==AdjustmentEvent.TRACK) {
 				 int currentValue = speedControl.getValue();
 				 previous=currentValue;
+				 if (threeD) {
+					 tdpanel.refreshValues();
+				 }
 			 }
 	
 		  }			  
@@ -714,22 +720,26 @@ class Explore extends JFrame{
 	      }
 
 	      public void keyPressed(KeyEvent e) {
-		    	  if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-		    		  explore.dispose();
-		    		  System.exit(0);
-		    	  }
-		    	  else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-		    		  backgroundX-=7;		    	    
-		    	  }
-		    	  else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-		    		  backgroundX+=7;
-		    	  }
-		    	  else if (e.getKeyCode() == KeyEvent.VK_UP) {
-		    		  backgroundY+=7;
-		    	  }
-		    	  else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-		    		  backgroundY-=7;
-		    	  }
+	    	  if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+	    		  explore.dispose();
+	    		  System.exit(0);
+	    	  }
+	    	  else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+	    		  backgroundX-=7;		    	    
+	    	  }
+	    	  else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+	    		  backgroundX+=7;
+	    	  }
+	    	  else if (e.getKeyCode() == KeyEvent.VK_UP) {
+	    		  backgroundY+=7;
+	    	  }
+	    	  else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+	    		  backgroundY-=7;
+	    	  }
+	    	  //update values for 3D
+	    	  if (threeD) {
+					 tdpanel.refreshValues();
+			  }
 	      }   
 	      
 	      public void keyReleased(KeyEvent e) {

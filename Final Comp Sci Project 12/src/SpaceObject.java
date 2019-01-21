@@ -3,6 +3,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 
+import javax.media.j3d.Alpha;
+import javax.media.j3d.RotationInterpolator;
+import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 
 abstract class SpaceObject{
@@ -95,5 +98,23 @@ abstract class SpaceObject{
 		 int resolution= Toolkit.getDefaultToolkit().getScreenResolution();
 		 double conversion=(number*72)/(resolution*1000);
 		 return (float) conversion;
+	 }
+	 public RotationInterpolator spinAroundAxis (int multiplier, int divisor, double  sunRadius) {
+		 Alpha axisAlpha = new Alpha(-1, Alpha.INCREASING_ENABLE, 0, 0,findAlphaSpin(multiplier, divisor,sunRadius),0, 0, 0, 0, 0);
+		 Transform3D rotation = new Transform3D();
+		 //Transform3D temp = new Transform3D();
+		 rotation.rotY(Math.PI/180*axialTilt);
+		 //temp.rotZ(Math.PI/2);
+		// rotation.mul(temp);
+		 RotationInterpolator spin = new RotationInterpolator(axisAlpha, getTransformGroup(),rotation, 0.0f, (float) Math.PI * 2.0f);
+		 transformAll.addChild(spin);
+		 return spin;
+	 }
+	 private long findAlphaSpin(int multiplier, int divisor, double sunRadius) {
+		 double speed=speedRotates*multiplier*50; //pixels a second		
+		 double radius2=radius/divisor;			
+		 double distanceAxis=2*Math.PI; //in pixels    //check this.
+		 double time= distanceAxis/speed; //in seconds
+		 return (long)time;
 	 }
 }

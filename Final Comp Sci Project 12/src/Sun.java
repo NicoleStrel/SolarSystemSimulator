@@ -28,8 +28,16 @@ class Sun extends SpaceObject{
 	Sun(String name, double speedRotates, double angleOfTilt, String directionRotates, double radius, Color color, String [] data){
 		super(name, speedRotates, angleOfTilt, directionRotates, radius, color, data);
 	}
+	//maybe
 	public void addChildT(RotationInterpolator rotator) {
 		getTransformGroup().addChild(rotator);
+	}
+	public Transform3D getSunTransform(int backgroundX, int backgroundY, int divisor) {
+		 Transform3D t = new Transform3D();
+		 double radius2=radius/divisor;
+		 Vector3d vector = new Vector3d(convertToFloat(centerX+radius2+backgroundX),convertToFloat(backgroundY) , 0.0f);
+		 t.set(vector);
+		 return t;
 	}
 	public void drawSun(Graphics g2, int backgroundX, int backgroundY, int divisor) {
 		 int radius2=(int)(radius/divisor);
@@ -38,7 +46,7 @@ class Sun extends SpaceObject{
 		 g2.fillOval(centerX+backgroundX,centerY-radius2+backgroundY,radius2*2, radius2*2);		 
 		  
 	}
-	 public void renderSphere(int backgroundX, int backgroundY, int divisor) { 	
+	 public void renderSphere( int divisor) { 	
 		 double radius2=radius/divisor;
 		 
 		 //apearance
@@ -48,26 +56,22 @@ class Sun extends SpaceObject{
 		 Color3f objColor = new Color3f(1.0f, 1.0f, 0.0f);	 
 		 Material m = new Material(objColor, eColor, objColor, sColor, 100.0f);
 		 m.setLightingEnable(true);
-		 ColoringAttributes colorAttribute= new ColoringAttributes(objColor, ColoringAttributes.NICEST);
+		 //ColoringAttributes colorAttribute= new ColoringAttributes(objColor, ColoringAttributes.NICEST);
 		 		 
 		 //add sphere
-		 //app.setMaterial(m);
-		 app.setColoringAttributes(colorAttribute);
+		 app.setMaterial(m);
+		 //app.setColoringAttributes(colorAttribute);
 		 Sphere sphere= new Sphere(convertToFloat(radius2), Sphere.GENERATE_NORMALS, 80,app); 
 		 getInnerT().addChild(sphere);
 	 }
-	 public void startingPos(int backgroundX, int backgroundY, int divisor) {	 
-		    Transform3D t = new Transform3D();
-		    double radius2=radius/divisor;
-		    Vector3d vector = new Vector3d(convertToFloat(centerX+radius2+backgroundX), backgroundY , 0.0f);
-		    t.set(vector);
-		    getInnerT().setTransform(t);
+	 public void startingPos(int backgroundX, int backgroundY, int divisor) {	 	   
+		    getInnerT().setTransform(getSunTransform(backgroundX,backgroundY,divisor));
 	 }
 	 public SpotLight addSpotLight(int backgroundX, int backgroundY, int divisor) {
 		 double radius2=radius/divisor;
 		 Color3f color = new Color3f(1.0f, 1.0f, 0.88f);
-		 Point3f point= new  Point3f(convertToFloat(centerX+radius2+backgroundX),backgroundY , 0.0f);
-		 Vector3f vector = new Vector3f(convertToFloat(centerX+radius2+backgroundX), backgroundY , 0.0f);
+		 Point3f point= new  Point3f(convertToFloat(centerX+radius2+backgroundX),convertToFloat(backgroundY) , 0.0f);
+		 Vector3f vector = new Vector3f(convertToFloat(centerX+radius2+backgroundX), convertToFloat(backgroundY), 0.0f);
 		 Point3f atten = new Point3f(1.0f, 0.0f, 0.0f);
 		 SpotLight light = new SpotLight(color,point, atten, vector,(float) Math.PI, 128.0f);
 		 getInnerT().addChild(light);

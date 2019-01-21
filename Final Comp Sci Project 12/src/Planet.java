@@ -117,7 +117,7 @@ class Planet extends SpaceObject{
 		g.drawLine(x1+backgroundX+orbitalMovement.getOrbitalX(), y1+backgroundY+orbitalMovement.getOrbitalY(), x2+backgroundX+orbitalMovement.getOrbitalX(), y2+backgroundY+orbitalMovement.getOrbitalY());
 	}
 	
-	 public void renderSphere(int backgroundX, int backgroundY, int divisor) { 	
+	 public void renderSphere(int divisor) { 	
 		 double radius2=radius/divisor;
 		 
 		 //apearance
@@ -141,17 +141,24 @@ class Planet extends SpaceObject{
 		    Transform3D t = new Transform3D();
 		    double radius2=radius/divisor;
 		    double distance =distanceFromSun/divisor;
-		    Vector3d lPos1 = new Vector3d(convertToFloat(centerX-radius2-distance+backgroundX), backgroundY , 0.0f);
+		    Vector3d lPos1 = new Vector3d(convertToFloat(centerX-radius2-distance+backgroundX), convertToFloat(backgroundY) , 0.0f);
 		    t.set(lPos1);
 		    getInnerT().setTransform(t);
 	 }
-	 public RotationInterpolator addOrbital(TransformGroup target) {
+	 public RotationInterpolator addOrbital(Transform3D sunTransform, int multiplier, int divisor, double sunRadius) {
 	    // defalt for now (rotate around center)
-	    Transform3D yAxis = new Transform3D();
-	    Alpha rotorAlpha = new Alpha(-1, Alpha.INCREASING_ENABLE, 0, 0, 4000,0, 0, 0, 0, 0);
-	    RotationInterpolator rotator = new RotationInterpolator(rotorAlpha,target, yAxis, 0.0f, (float) Math.PI * 2.0f);
+	    Alpha rotorAlpha = new Alpha(-1, Alpha.INCREASING_ENABLE, 0, 0,findAlphaDuration(multiplier, divisor,sunRadius),0, 0, 0, 0, 0);
+	    RotationInterpolator rotator = new RotationInterpolator(rotorAlpha,getTransformGroup(),sunTransform, 0.0f, (float) Math.PI * 2.0f);
 	    getTransformGroup().addChild(rotator);
 	    return rotator;
+	 }
+	 private long findAlphaDuration(int multiplier, int divisor, double sunRadius) { //in milliseconds
+		 double speed=speedRotateAroundSun*multiplier*10; //pixels a second		
+		 double radius2=getRadius()/divisor;		
+		 double distance= distanceFromSun/divisor;		
+		 double distanceOrbit=2*Math.PI*(radius2+distance+sunRadius); //in pixels
+		 double time= distanceOrbit/speed; //in seconds
+		 return (long)time;//in milliseconds
 	 }
 	 private Color3f readPlanetColor() throws FileNotFoundException{
 		 File fileIn = new File("planetColors3D.txt");
