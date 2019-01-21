@@ -74,7 +74,7 @@ class Sun extends SpaceObject{
 		 Color3f sColor = new Color3f(1.0f, 1.0f, 1.0f);
 		 Color3f objColor = new Color3f(1.0f, 1.0f, 0.0f);	 
 		 Material m = new Material(objColor, eColor, objColor, sColor, 128.0f);
-		// m.setLightingEnable(true);
+		 m.setLightingEnable(true);
 		 		 
 		 //add sphere
 		 app.setMaterial(m);

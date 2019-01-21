@@ -400,10 +400,11 @@ class Explore extends JFrame{
 		     }
 		     count++;
 		     //repaint graphics panel
-	    	//try {
-				//Thread.currentThread().sleep(50);
-			//} catch (InterruptedException e) {
-		    //}
+	    	try {
+	    		Thread.currentThread().sleep(10L);
+		     
+	    	}catch(InterruptedException e) {
+	    	}
 	    	repaint();
 	    	
 	    }
@@ -477,13 +478,9 @@ class Explore extends JFrame{
 			    sceneGraph.addChild(bg);
 			    
 			    //main light source
-			    DirectionalLight mainLight = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(0.0f,0.0f,-1.0f));
+			    DirectionalLight mainLight = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(-1.0f,1.0f,1.0f));
 			    mainLight.setInfluencingBounds(bounds);
 			    sceneGraph.addChild(mainLight);
-			    
-			    //DirectionalLight mainLight2 = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(0.0f,0.0f,-1.0f));
-			    //mainLight.setInfluencingBounds(bounds);
-			    //sceneGraph.addChild(mainLight2);
 			    
 				//add planets and the sun
 				Iterator<SpaceObject> itr=spaceObjects.iterator();
