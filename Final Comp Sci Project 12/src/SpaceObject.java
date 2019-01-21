@@ -1,6 +1,6 @@
+//imports
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Toolkit;
 
 import javax.media.j3d.Alpha;
@@ -8,24 +8,37 @@ import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 
+/** 
+* [SpaceObject.java]
+* @author Nicole Streltsov
+* Defines the characteristics of a space object in the program (abstract class)
+* January 2019
+*/
 abstract class SpaceObject{
-	protected double axialTilt; //degreees
+	//declare variables
+	private double axialTilt; //degreees
 	private double speedRotates; //pixels/s
 	private String directionRotates;
 	private String [] data;
-	protected double radius;
-	protected Color color;
+	private double radius;
+	private Color color;
 	private String name;
 	public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	public static final int centerX=(int)(screenSize.getWidth()/2);	     
-	public static final int centerY=(int)(screenSize.getHeight()/2)-100;
+	public final int centerX=(int)(screenSize.getWidth()/2);	     
+	public final int centerY=(int)(screenSize.getHeight()/2)-100;
 	private TransformGroup transformAll;
 	private TransformGroup innerTransform;
 	
-	
-	SpaceObject(double radius){
-		this.radius=radius;
-	}
+	/** SpaceObject *******************************************
+	  * constructor for the space object class
+	  * @param the name of the space object
+	  * @param the speed it rotates around itself
+	  * @param the angle of its tilt in degrees
+	  * @param the String direction the planet rotates around itself
+	  * @param the radius of the planet
+	  * @param the color of the planet
+	  * @param its array of data from the text file
+	  */
 	SpaceObject(String name, double speedRotates, double axialTilt, String directionRotates, double radius, Color color, String [] data){
 		this.name=name;
 		this.speedRotates=speedRotates;
@@ -36,85 +49,115 @@ abstract class SpaceObject{
 		this.data=data;
 		resetTransforms();
 	}
+	/** getAngle *******************************************
+	  * getter for axial tilt angle
+	  * @return the double value for the angle
+	  */
+	public double getAngle() {
+		return this.axialTilt;
+	}
+	/** getName *******************************************
+	  * getter for name of the space object
+	  * @return the string name of the object
+	  */
+	public String getName() {
+		return this.name;
+	}
+	/** getRadius *******************************************
+	  * getter for radius of the space object
+	  * @return the double radius of the object in pixels
+	  */
+	public double getRadius() {
+		return this.radius;
+	}
+	/** getColor *******************************************
+	  * getter for color of the space object
+	  * @return the color of the object
+	  */
+	public Color getColor() {
+		return this.color;
+	}
+	/** getCenterX *******************************************
+	  * getter for x reference point of the solar system (same)
+	  * @return the integer reference point
+	  */
+	public int getCenterX() {
+		return this.centerX;
+	}
+	/** getCenterY *******************************************
+	  * getter for y reference point of the solar system (same)
+	  * @return the integer reference point
+	  */
+	public int getCenterY() {
+		return this.centerY;
+	}
+	/** getData *******************************************
+	  * getter for array of original data of the space object
+	  * @return the String array of data
+	  */
+	public String [] getData() {
+		return this.data;
+	}
+	/** getTransformGroup *******************************************
+	  * getter for the main Transform group of the object
+	  * @return the main TransformGroup object
+	  */
+	public TransformGroup getTransformGroup() {
+		return this.transformAll;
+	}
+	/** getInnerT*******************************************
+	  * getter for the inner Transform group of the object
+	  * @return the inner TransformGroup object
+	  */
+	public TransformGroup getInnerT() {
+		return this.innerTransform;
+	}
+	/** resetTransforms*******************************************
+	  * regenerates new transform groups for the start or update
+	  */
 	public void resetTransforms() {
 		transformAll = new TransformGroup();
 		transformAll.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		innerTransform = new TransformGroup();
 		transformAll.addChild(innerTransform);
 	}
-	public double getAngle() {
-		return this.axialTilt;
-	}
-	public void setAngle(double axialTilt) {
-		this.axialTilt=axialTilt;
-	}
-	public double getDaysRotates() {
-		return this.speedRotates;
-	}
-	public void setDaysRotates(double daysRotates){
-		this.speedRotates=daysRotates;
-	}
-	public String getName() {
-		return this.name;
-	}
-	public void setName(String name) {
-		this.name=name;
-	}
-	public String getDirection() {
-		return this.directionRotates;
-	}
-	public void setDirection(String directionRotates) {
-		this.directionRotates=directionRotates;
-	}
-	public double getRadius() {
-		return this.radius;
-	}
-	public void setRadius(double radius) {
-		this.radius=radius;
-	}
-	public Color getColor() {
-		return this.color;
-	}
-	public void setColor(Color color) {
-		this.color=color;
-	}
-	public int getCenterX() {
-		return this.centerX;
-	}
-	public int getCenterY() {
-		return this.centerY;
-	}
-	public String [] getData() {
-		return this.data;
-	}
-	public TransformGroup getTransformGroup() {
-		return this.transformAll;
-	}
-	public TransformGroup getInnerT() {
-		return this.innerTransform;
-	}
-	 //pixels to millipoints
-	 public float convertToFloat(double number) {
-		 int resolution= Toolkit.getDefaultToolkit().getScreenResolution();
+	/** convertToFloat *******************************************
+	  * converts the pixel value to a millipoint floating value
+	  * @param the double original number
+	  * @return the float converted number
+	  */
+	 public float convertToFloat(double number) {  //pixels to millipoints
+		 int resolution= Toolkit.getDefaultToolkit().getScreenResolution(); //dpi
 		 double conversion=(number*72)/(resolution*1000);
 		 return (float) conversion;
 	 }
+	 /** spinAroundAxis *******************************************
+	  * spins the object around its own axis in 3d
+	  * @param the multiplier value from the speed adjust scroll bar
+	  * @param the divisor value from the size adjust scroll bar
+	  * @param the sun's radius in pixels
+	  * @return the RotationInterpolar of the spin
+	  */
 	 public RotationInterpolator spinAroundAxis (int multiplier, int divisor, double  sunRadius) {
 		 Alpha axisAlpha = new Alpha(-1, Alpha.INCREASING_ENABLE, 0, 0,findAlphaSpin(multiplier, divisor,sunRadius),0, 0, 0, 0, 0);
 		 Transform3D rotation = new Transform3D();
-		 //Transform3D temp = new Transform3D();
-		 rotation.rotY(Math.PI/180*axialTilt);
-		 //temp.rotZ(Math.PI/2);
-		// rotation.mul(temp);
+		 rotation.rotY(Math.PI/180*axialTilt); //make the axis
 		 RotationInterpolator spin = new RotationInterpolator(axisAlpha, getTransformGroup(),rotation, 0.0f, (float) Math.PI * 2.0f);
-		 transformAll.addChild(spin);
+		 transformAll.addChild(spin); // add it to the object's main transform group
 		 return spin;
 	 }
+	 /** findAlphaSpin *******************************************
+	  * finds the time it takes to make one revolution around itself
+	  * @param the multiplier value from the speed adjust scroll bar
+	  * @param the divisor value from the size adjust scroll bar
+	  * @param the sun's radius in pixels
+	  * @return the long time
+	  */
 	 private long findAlphaSpin(int multiplier, int divisor, double sunRadius) {
-		 double speed=speedRotates*multiplier*50; //pixels a second		
+		 double speed=speedRotates*multiplier; //pixels a second		
 		 double radius2=radius/divisor;			
-		 double distanceAxis=2*Math.PI; //in pixels    //check this.
+		 double distanceAxis=2*Math.PI; //in pixels   
 		 double time= distanceAxis/speed; //in seconds
 		 return (long)time;
 	 }
-}
+} //end of SpaceObject class
