@@ -12,8 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -46,7 +44,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -85,7 +82,6 @@ class Explore extends JFrame{
     private Clip music;
     private boolean threeD=false;
     private boolean label;
-    private boolean  texture;
     private boolean axialTilt;
     private boolean play=true;
     
@@ -192,7 +188,7 @@ class Explore extends JFrame{
 		controlBar.add(Box.createRigidArea(new Dimension(0,40)));
 		
 	    //---graphics panel-----
-	    planetDesc = new PlanetDescription(true, null, spaceObjects);
+	    planetDesc = new PlanetDescription(true,true, null, spaceObjects);
 	    controlBar.add(planetDesc);
 	    
 	    //---------audio-------------
@@ -341,7 +337,7 @@ class Explore extends JFrame{
 			   if (sizeAdjust!=null) {
 				   //sun
 		    	   if (object instanceof Sun) {
-		    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
+		    		   ((Sun)object). draw(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
 		    	   }	
 		    	   //planet
 		    	   else  {		    		   
@@ -353,7 +349,7 @@ class Explore extends JFrame{
 			    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
 			    	   }
 			    	   //move by  orbit
-		    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());	
+		    		   ((Planet)object).draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());	
 		    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
 		    		   if (axialTilt) {
 		    			   ((Planet)object).drawAxis(g, sizeAdjust.getPrevious(), backgroundX, backgroundY);
@@ -683,6 +679,10 @@ class Explore extends JFrame{
 		    	   threeD=false;
 		    	   explore.getContentPane().removeAll();
 				   explore.getContentPane().add(solarSystem);
+				   controlBar.getComponent(8).setVisible(true);
+				   controlBar.getComponent(9).setVisible(true);
+				   controlBar.getComponent(10).setVisible(true);
+				   planetDesc.setDisplay(true);
 				   explore.getContentPane().add(controlBar);	
 				   explore.revalidate(); //must realine and repaint the frame
 				   explore.repaint();
@@ -691,9 +691,14 @@ class Explore extends JFrame{
 		    	   threeD=true;
 		    	   explore.getContentPane().removeAll();
 				   explore.getContentPane().add(tdpanel);
+				   controlBar.getComponent(8).setVisible(false);
+				   controlBar.getComponent(9).setVisible(false);
+				   controlBar.getComponent(10).setVisible(false);
+				   planetDesc.setDisplay(false);
 				   explore.getContentPane().add(controlBar);
 				   explore.revalidate();
 				   explore.repaint();
+				  
 		       }
 		    }
 	  }
@@ -718,6 +723,7 @@ class Explore extends JFrame{
 	      public void keyPressed(KeyEvent e) {
 	    	  if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 	    		  explore.dispose();
+	    		  music.stop();
 	    		  new MainMenu();
 	    	  }
 	    	  else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {

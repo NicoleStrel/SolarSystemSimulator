@@ -1,6 +1,7 @@
 //imports
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 
 import javax.media.j3d.Alpha;
@@ -112,6 +113,7 @@ abstract class SpaceObject{
 	public TransformGroup getInnerT() {
 		return this.innerTransform;
 	}
+
 	/** resetTransforms*******************************************
 	  * regenerates new transform groups for the start or update
 	  */
@@ -154,10 +156,30 @@ abstract class SpaceObject{
 	  * @return the long time
 	  */
 	 private long findAlphaSpin(int multiplier, int divisor, double sunRadius) {
-		 double speed=speedRotates*multiplier; //pixels a second		
-		 double radius2=radius/divisor;			
+		 double speed=speedRotates*multiplier; //pixels a second			
 		 double distanceAxis=2*Math.PI; //in pixels   
 		 double time= distanceAxis/speed; //in seconds
 		 return (long)time;
 	 }
+	 //--------------------------------------------abstract methods--------------------------------
+	/** draw *******************************************
+	  * draws the space object based on location parameters
+	  * @param graphics component
+	  * @param integer background x coordinate 
+	  * @param integer background y coordinate 
+	  * @param the divisor value from the size adjust scroll bar
+	  */
+	public abstract void draw(Graphics g, int backgroundX, int backgroundY, int divisor);
+	/** renderSphere *******************************************
+	  * creates a sphere object and adds it to its own personal transform group
+	  * @param the divisor value from the size adjust scroll bar
+	  */
+	public abstract void renderSphere(int divisor);	
+	/** startingPos *******************************************
+	  * transforms the space object from the center to the starting position of its orbit
+	  * @param integer background x coordinate 
+	  * @param integer background y coordinate 
+	  * @param the divisor value from the size adjust scroll bar
+	  */
+	public abstract void startingPos(int backgroundX, int backgroundY, int divisor);
 } //end of SpaceObject class

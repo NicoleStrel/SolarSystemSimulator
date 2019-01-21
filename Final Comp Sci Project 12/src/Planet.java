@@ -70,14 +70,14 @@ class Planet extends SpaceObject{
 		return this.orbitalMovement;
 	}
 	
-	/** drawPlanet *******************************************
+	/** draw*******************************************
 	  * draws the planet in 2d based on given location parameters
 	  * @param graphics component
 	  * @param integer background x coordinate 
 	  * @param integer background y coordinate 
 	  * @param the divisor value from the size adjust scroll bar
 	  */
-	public void drawPlanet(Graphics g, int backgroundX, int backgroundY, int divisor) {
+	public void draw(Graphics g, int backgroundX, int backgroundY, int divisor) {
 		 int startingPoint=(int)(centerX-(distanceFromSun/divisor));
 		 int radius2=(int)(getRadius()/divisor);
 	     g.setColor(getColor());
@@ -125,7 +125,7 @@ class Planet extends SpaceObject{
 	  * @param integer background y coordinate 
 	  * @param the divisor value from the size adjust scroll bar
 	  */
-	public void drawAxis(Graphics g, int divisor, int backgroundX, int backgroundY) {
+	public void drawAxis(Graphics g, int backgroundX, int backgroundY, int divisor) {
 		//declare variables
 		int startingPoint=(int)(centerX-(distanceFromSun/divisor));
 		int radius2=(int)(getRadius()/divisor);

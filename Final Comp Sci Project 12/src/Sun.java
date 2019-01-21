@@ -48,17 +48,17 @@ class Sun extends SpaceObject{
 		 return t;
 	}
 	
-	/** drawSun *******************************************
+	/** draw *******************************************
 	  * draws the sun based on location parameters
 	  * @param graphics component
 	  * @param integer background x coordinate 
 	  * @param integer background y coordinate 
 	  * @param the divisor value from the size adjust scroll bar
 	  */
-	public void drawSun(Graphics g2, int backgroundX, int backgroundY, int divisor) {
+	public void draw(Graphics g, int backgroundX, int backgroundY, int divisor) {
 		 int radius2=(int)(getRadius()/divisor); //divide by ratio
-		 g2.setColor(getColor());
-		 g2.fillOval(centerX+backgroundX,centerY-radius2+backgroundY,radius2*2, radius2*2);		 	  
+		 g.setColor(getColor());
+		 g.fillOval(centerX+backgroundX,centerY-radius2+backgroundY,radius2*2, radius2*2);		 	  
 	}
 	
 	/** renderSphere *******************************************
