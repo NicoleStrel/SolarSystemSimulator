@@ -221,7 +221,7 @@ class Planet extends SpaceObject{
 	 public RotationInterpolator addOrbital(Transform3D sunTransform, int multiplier, int divisor, double sunRadius) {
 	    // defalt for now (rotate around center)
 	    Alpha rotorAlpha = new Alpha(-1, Alpha.INCREASING_ENABLE, 0, 0,findAlphaDuration(multiplier, divisor,sunRadius),0, 0, 0, 0, 0);
-	    RotationInterpolator rotator = new RotationInterpolator(rotorAlpha,getTransformGroup(),sunTransform, 0.0f, (float) Math.PI * 2.0f);
+	    RotationInterpolator rotator = new RotationInterpolator(rotorAlpha,getTransformGroup(),sunTransform, 0.0f, (float) Math.PI * 2.0f);  
 	    getTransformGroup().addChild(rotator); //add to its own transform group
 	    return rotator;
 	 }

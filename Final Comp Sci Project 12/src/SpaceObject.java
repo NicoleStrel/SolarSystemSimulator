@@ -144,7 +144,14 @@ abstract class SpaceObject{
 		 Alpha axisAlpha = new Alpha(-1, Alpha.INCREASING_ENABLE, 0, 0,findAlphaSpin(multiplier, divisor,sunRadius),0, 0, 0, 0, 0);
 		 Transform3D rotation = new Transform3D();
 		 rotation.rotY(Math.PI/180*axialTilt); //make the axis
-		 RotationInterpolator spin = new RotationInterpolator(axisAlpha, getTransformGroup(),rotation, 0.0f, (float) Math.PI * 2.0f);
+		 
+		 RotationInterpolator spin;
+		 if (directionRotates.equals("CW")) {
+			 spin = new RotationInterpolator(axisAlpha, getTransformGroup(),rotation, 0.0f, (float) Math.PI * 2.0f);
+		 }
+		 else {  //clockwise
+			 spin = new RotationInterpolator(axisAlpha, getTransformGroup(),rotation,(float) Math.PI * 2.0f, 0.0f);
+		 }
 		 transformAll.addChild(spin); // add it to the object's main transform group
 		 return spin;
 	 }
