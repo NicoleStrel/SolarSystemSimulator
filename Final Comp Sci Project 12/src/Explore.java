@@ -2,21 +2,16 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
-import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -26,22 +21,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
-import javax.media.j3d.AmbientLight;
-import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
-import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
-import javax.media.j3d.Material;
-import javax.media.j3d.Node;
-import javax.media.j3d.PointLight;
 import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.SpotLight;
 import javax.media.j3d.Transform3D;
@@ -56,22 +44,16 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
-import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 
-import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
-
 
 /** 
  * [Explore.java]
@@ -100,7 +82,6 @@ class Explore extends JFrame{
     private Clip music;
     private boolean threeD=false;
     private boolean label;
-    private boolean  texture;
     private boolean axialTilt;
     private boolean play=true;
     
@@ -116,12 +97,11 @@ class Explore extends JFrame{
 	    this.setUndecorated(true);  
 	    this.setResizable(false);
 	    
-	    
 	    //------solar system panel-------
-	    try {readPlanetStats();} catch (FileNotFoundException e) {
-			  System.out.print("hi");
+	    try {
+	    	readPlanetStats();
+	    } catch (FileNotFoundException e) {
 	    }
-	    //generateSpaceObjects();
 	    solarSystem = new SolarSystem();
 	    this.getContentPane().add(solarSystem);
 	    
@@ -130,14 +110,16 @@ class Explore extends JFrame{
 	    controlBar.setPreferredSize(new Dimension(300,(int)screenSize.getHeight()));
 	    controlBar.setMinimumSize(controlBar.getPreferredSize());
 	    controlBar.setMaximumSize(controlBar.getPreferredSize());
-	    //controlBar.setBorder(new EmptyBorder(200, 20, 300, 50));
 	    controlBar.setBackground(new Color(255,255,255));
 	    controlBar.setLayout(new BoxLayout(controlBar,  BoxLayout.Y_AXIS));
 	    controlBar.add(Box.createRigidArea(new Dimension(0,20)));
 
 	    //-----control label----
 	    BufferedImage controls = null;
-		try {controls = ImageIO.read(new File("images/controls.png"));} catch (IOException e) {}
+		try {
+			controls = ImageIO.read(new File("images/controls.png"));
+		} catch (IOException e) {
+		}
 	    JLabel controlLabel = new JLabel(new ImageIcon(controls));
 	    controlLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    controlBar.add(controlLabel);
@@ -206,7 +188,7 @@ class Explore extends JFrame{
 		controlBar.add(Box.createRigidArea(new Dimension(0,40)));
 		
 	    //---graphics panel-----
-	    planetDesc = new PlanetDescription(true, null, spaceObjects);
+	    planetDesc = new PlanetDescription(true,true, null, spaceObjects);
 	    controlBar.add(planetDesc);
 	    
 	    //---------audio-------------
@@ -225,7 +207,6 @@ class Explore extends JFrame{
 	         e.printStackTrace();
 	    }
 	    
-	    
 	    this.getContentPane().add(controlBar);
 	    
 	    //-------------------------------------------------		    
@@ -237,18 +218,22 @@ class Explore extends JFrame{
 	    //set up 3d panel beforehand- takes a while to render
 	    tdpanel = new ThreeDPanel();
 	    
+	    //finish set-up
 	    this.addMouseListener(mouseListener);
 	    this.requestFocusInWindow(); 
 	    this.pack();
 	    this.setVisible(true);
 	}
+	
 	/** readPlanetStats *******************************************
-     * reads all the planet information from the text file and stores it into variables
-     */
+      * reads all the planet information from the text file and stores it into variables
+      * @throws FileNotFoundException
+      */
 	  private void readPlanetStats() throws FileNotFoundException {
 		  File fileIn = new File("planetStats.txt");
 		  Scanner textIn = new Scanner(fileIn); 
 		  
+		  //loop through the file
 		  while (textIn.hasNext()) {
 			  String line= textIn.nextLine();
 			  String [] data= line.split("[|]");
@@ -258,11 +243,11 @@ class Explore extends JFrame{
 				  double angle= Double.parseDouble(data[6]);
 				  double radius=convertPixels(Integer.parseInt(data[1]))/ratioP;
 				  double speedAroundSun=convertPixels(Double.parseDouble(data[5]))/ratioS;
-				  //color
+				  //get the color
 				  String[] rgbValues= data[8].split(",");
 				  Color color= new Color(Integer.parseInt(rgbValues[0]),Integer.parseInt(rgbValues[1]), Integer.parseInt(rgbValues[2]));
 				  
-				  //distance from sun
+				  //get the distance from sun
 				  double multiplier;
 				  if (data[3].equals("M")) { //millions 
 					 multiplier=Math.pow(10, 6);
@@ -282,28 +267,34 @@ class Explore extends JFrame{
 				  this.spaceObjects.add((new Sun(data[0],speed,angle, data[4],radius, Color.yellow, data)));
 			  }
 		  }		  
-		  textIn.close();
-		     
+		  textIn.close();  
 	  }
+	  /** convertPixels *******************************************
+	      * converts the given length in km  and converts it to pixels
+	      * @param the double value in kilometers
+	      * @return the double value in pixels
+	      */
 	  private double convertPixels (double value) {
 		  double convertRatio= 3779575.17575025;
 		  return value*convertRatio;
 	  }
 
-	 /** ----------------------------- INNER CLASSES ------------------------------ **/
+	 /** ---------------------------------------------- INNER CLASSES --------------------------------------------------- **/
 	  /** 
 	   * [SolarSystem.java]
 	   * @author Nicole Streltsov
 	   * A class (JPanel) that contains the solar system
 	   * January 2019
 	   */
-	  private class SolarSystem extends JPanel {
-			
+	  private class SolarSystem extends JPanel {	
 		private Clock clock;
 		private FrameRate frameRate;
 		private Star [] stars;
 		private int count=600;  
 		
+		/** SolarSystem *******************************************
+	      * the constructor for the solar system class(JPanel)
+	      */
 		SolarSystem() {
 		      this.setBackground(Color.black);	 
 		      this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
@@ -314,6 +305,7 @@ class Explore extends JFrame{
 		}
 		/** paintComponent *******************************************
 	     * draws all the nessasary componets on the graphics panel(Solar System)
+	     * @param the graphics component to draw on the graphics panel
 	     */
 	    public void paintComponent(Graphics g) {   
 	    	 super.paintComponent(g); 
@@ -324,11 +316,11 @@ class Explore extends JFrame{
 			 frameRate.update();
 			
 			 //--------stars twinkle---------------
-             //class for stars and draw them based on x and y, update evrey 10 count
+			 //create new stars after a certain period
 			 if (count==600) {
 				 stars=new Star [7*sizeAdjust.getPrevious()/3];
 				 for (int i=0; i<stars.length; i++) {
-					 int y=(int)((screenSize.getHeight()-1)*Math.random()+1);
+					 int y=(int)((screenSize.getHeight()-1)*Math.random()+1); //randomize values in the panel
 					 int x=(int)((screenSize.getWidth()-300-1)*Math.random()+1);
 					 stars[i]=new Star (x,y);
 					 count=0;
@@ -338,14 +330,17 @@ class Explore extends JFrame{
 			 for (Star each: stars) {
 				 each.draw(g);
 			 }
+			 
 		     //-------draw solar system-------------
 		   	 Iterator<SpaceObject> itr=spaceObjects.iterator();
 			 while (itr.hasNext()) {
 			   SpaceObject object = (SpaceObject)itr.next();   
 			   if (sizeAdjust!=null) {
+				   //sun
 		    	   if (object instanceof Sun) {
-		    		   ((Sun)object). drawSun(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
-		    	   }		    	   
+		    		   ((Sun)object). draw(g,backgroundX, backgroundY,sizeAdjust.getPrevious());	
+		    	   }	
+		    	   //planet
 		    	   else  {		    		   
 		    		   if (orbits) {
 		    			   ((Planet)object).drawOrbit(g,backgroundX, backgroundY, sizeAdjust.getPrevious(), (int)((spaceObjects.get(8).getRadius())));
@@ -354,7 +349,8 @@ class Explore extends JFrame{
 			    			  TextLabel label= new TextLabel(object.getName(),((Planet)object).getOrbitalMovement(), object.getRadius(), ((Planet)object).getDistanceFromSun());
 			    			  label.draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());
 			    	   }
-		    		   ((Planet)object).drawPlanet(g, backgroundX, backgroundY,sizeAdjust.getPrevious());	
+			    	   //move by  orbit
+		    		   ((Planet)object).draw(g, backgroundX, backgroundY,sizeAdjust.getPrevious());	
 		    		   ((Planet)object).moveOrbital(sizeAdjust.getPrevious(),(int)(spaceObjects.get(8).getRadius()));
 		    		   if (axialTilt) {
 		    			   ((Planet)object).drawAxis(g, sizeAdjust.getPrevious(), backgroundX, backgroundY);
@@ -366,18 +362,27 @@ class Explore extends JFrame{
 			   }
 			 }
 			 
-	       	 //--------------extra stuff------------
+	       	 //--------------extra details------------
 	       	 g.setColor(Color.white);
 		   	 g.drawString("Note: Planet sizes are inflated (not exactly to scale)", 20, 30);  
 		   	 frameRate.draw(g,20,45);
 		   	 BufferedImage arrowKeys = null;
-		     try {arrowKeys = ImageIO.read(new File("images/arrowKeys.png"));} catch (IOException e) {}
+		     try {
+		    	 arrowKeys = ImageIO.read(new File("images/arrowKeys.png"));
+		     } catch (IOException e) {
+		     }
 		     g.drawImage(arrowKeys,15, (int)screenSize.getHeight()-100, null);
 		     g.drawString("View Controls: ", 20, (int)screenSize.getHeight()-90);
 		     BufferedImage soundOn = null;
-		     try {soundOn = ImageIO.read(new File("images/volumeOn.png"));} catch (IOException e) {}
+		     try {
+		    	 soundOn = ImageIO.read(new File("images/volumeOn.png"));
+		     } catch (IOException e) {
+		     }
 		     BufferedImage soundOff = null;
-		     try {soundOff = ImageIO.read(new File("images/volumeOff.png"));} catch (IOException e) {}
+		     try {
+		    	 soundOff = ImageIO.read(new File("images/volumeOff.png"));
+		     } catch (IOException e) {
+		     }
 		     if (on) {
 		    	g.drawImage(soundOn, (int)screenSize.getWidth()-330, 5, null);
 		     }
@@ -394,7 +399,14 @@ class Explore extends JFrame{
 		    	 g.fillPolygon(xPoints, yPoints,3);
 		     }
 		     count++;
-		     repaint();
+		     //repaint graphics panel
+	    	try {
+	    		Thread.currentThread().sleep(10L);
+		     
+	    	}catch(InterruptedException e) {
+	    	}
+	    	repaint();
+	    	
 	    }
 	  }
 	  /** 
@@ -405,39 +417,39 @@ class Explore extends JFrame{
 	   */
 	  class ThreeDPanel extends JPanel{
 			private JPanel threeDimension;
-			private Clock clock;
-			private FrameRate frameRate;
 			private SimpleUniverse universe;
 			private Canvas3D canvas;
 			private BranchGroup root;
 			
+			/** ThreeDPanel *******************************************
+		      * the constructor for the ThreeDPanel class(JPanel)
+		      */
 			public ThreeDPanel() { 
 			    this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
 			    this.setMinimumSize(this.getPreferredSize());
 			    this.setMaximumSize(this.getPreferredSize());
 			    this.setLayout(new BorderLayout());
-			    clock=new Clock();
-			    frameRate=new FrameRate();
 			    
+			    //scene graph root
 			    root= new BranchGroup();
 			    root.setCapability(BranchGroup.ALLOW_DETACH);
-			   //set up graphics
+			    
+			    //set up graphics
 			    GraphicsConfiguration config= SimpleUniverse.getPreferredConfiguration();
 		        canvas= new Canvas3D(config);
-		        getContentPane().add(canvas);  //this
-		        //canvas.setFocusable(true);
-				//canvas.getView().repaint();
+		        getContentPane().add(canvas);  
 		        universe = new SimpleUniverse(canvas);
 				this.add ("Center", canvas);
 				BranchGroup scene = createSceneGraph();
-				universe.getViewingPlatform().setNominalViewingTransform();
-				//universe.getViewer().getView().setBackClipDistance(100.0);							
+				
+				//generate universe
+				universe.getViewingPlatform().setNominalViewingTransform();							
 				universe.addBranchGraph(scene);
 				
-				GlassPane pane = new GlassPane();
-				explore.setGlassPane(pane);
-				
 			}
+			/** refreshValues *******************************************
+		      * detatches the old scene graph and refreshes the transformations when adjustment is needed
+		      */
 			public void refreshValues() {
 				root.detach();
 				//set transformations to null
@@ -449,15 +461,14 @@ class Explore extends JFrame{
 				BranchGroup scene = createSceneGraph();
 				universe.addBranchGraph(scene);
 			}
+			/** createSceneGraph() *******************************************
+		      * creates the scene graph with all the lighting,transformations and 3d rendering and returns the root node of it all
+		      * @return Branchgroup root node of the scene graph
+		      */
 			private BranchGroup createSceneGraph(){	
 				BranchGroup temp = new BranchGroup();
-	   
-				//size scaling
 			    TransformGroup sceneGraph = new TransformGroup();
 			    sceneGraph.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			    //Transform3D tsize = new Transform3D();
-			    //tsize.setScale(sizeAdjust.getPrevious()/100);
-			    //sceneGraph.setTransform(tsize);
 			    temp.addChild(sceneGraph);
 			    
 			    //bounds for lighting
@@ -466,88 +477,47 @@ class Explore extends JFrame{
 			    bg.setApplicationBounds(bounds);
 			    sceneGraph.addChild(bg);
 			    
-			    //AmbientLight aLgt = new AmbientLight(new Color3f(0.0f, 0.0f, 0.0f));
-			    DirectionalLight mainLight = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(-1.0f,0.0f,1.0f));
+			    //main light source
+			    DirectionalLight mainLight = new DirectionalLight(new Color3f(0.0f, 0.0f, 0.0f), new Vector3f(-1.0f,1.0f,1.0f));
 			    mainLight.setInfluencingBounds(bounds);
 			    sceneGraph.addChild(mainLight);
 			    
-				//add planets and stuff here
+				//add planets and the sun
 				Iterator<SpaceObject> itr=spaceObjects.iterator();
 			    while (itr.hasNext()) {
 			       SpaceObject object = (SpaceObject)itr.next(); 
 			       sceneGraph.addChild(object.getTransformGroup());
+			       //sun
 				   if (object instanceof Sun) {
-					   ((Sun)object).renderSphere(sizeAdjust.getPrevious());//backgroundY is not used  for now
+					   ((Sun)object).renderSphere(sizeAdjust.getPrevious());
 					   ((Sun)object).startingPos(backgroundX,backgroundY,sizeAdjust.getPrevious());
 					   SpotLight light =((Sun)object).addSpotLight(backgroundX,backgroundY,sizeAdjust.getPrevious());
 					   light.setInfluencingBounds(bounds);
 					   
 				   }
+				   //planets
 				   else {
 					   ((Planet)object).renderSphere(sizeAdjust.getPrevious());
 					   ((Planet)object).startingPos(backgroundX,backgroundY,sizeAdjust.getPrevious());
-					   //rotation
+					   //rotation around orbit
 					   Transform3D sunTransform =((Sun)spaceObjects.get(8)).getSunTransform(backgroundX, backgroundY,sizeAdjust.getPrevious());
 					   RotationInterpolator rotator= ((Planet)object).addOrbital(sunTransform, speedAdjust.getPrevious(), sizeAdjust.getPrevious(), spaceObjects.get(8).getRadius());
 				       rotator.setSchedulingBounds(bounds);
-				       
 					  
 				   }
+				   //rotation around axis
 				   RotationInterpolator spin=object.spinAroundAxis (speedAdjust.getPrevious(),sizeAdjust.getPrevious(), spaceObjects.get(8).getRadius());
 				   spin.setSchedulingBounds(bounds);
 				 }	
+			    
+			    //compile and return the root node
 			     temp.setCapability(BranchGroup.ALLOW_DETACH);
 			     root=temp;
 				 root.compile();
 				 return root;
-				
 			}
-			//----------inner class--------------
-			class GlassPane extends JComponent implements ItemListener {
-				GlassPane(){
-					  this.setPreferredSize(new Dimension(((int)screenSize.getWidth())-300,(int)screenSize.getHeight()));
-					  this.setMinimumSize(this.getPreferredSize());
-					  this.setMaximumSize(this.getPreferredSize());
-				}
-				public void itemStateChanged(ItemEvent e) {
-					//setVisible(e.getStateChange() == ItemEvent.SELECTED);
-					setVisible(true);
-					
-				}
-				public void paintComponent(Graphics g) {
-					System.out.println("hi");
-			    	 g.setColor(Color.white);
-				   	 g.drawString("Note: Planet sizes are inflated (not exactly to scale)", 20, 30);  
-				   	 frameRate.draw(g,20,45);
-				   	 BufferedImage arrowKeys = null;
-				     try {arrowKeys = ImageIO.read(new File("images/arrowKeys.png"));} catch (IOException e) {}
-				     g.drawImage(arrowKeys,15, (int)screenSize.getHeight()-100, null);
-				     g.drawString("View Controls: ", 20, (int)screenSize.getHeight()-90);
-				     BufferedImage soundOn = null;
-				     try {soundOn = ImageIO.read(new File("images/volumeOn.png"));} catch (IOException e) {}
-				     BufferedImage soundOff = null;
-				     try {soundOff = ImageIO.read(new File("images/volumeOff.png"));} catch (IOException e) {}
-				     if (on) {
-				    	g.drawImage(soundOn, (int)screenSize.getWidth()-330, 5, null);
-				     }
-				     else {
-				    	 g.drawImage(soundOff, (int)screenSize.getWidth()-330, 5, null);
-				     }
-				     if (play) {
-				    	 g.fillRect((int)screenSize.getWidth()-365, 5, 5, 20);
-				    	 g.fillRect((int)screenSize.getWidth()-355,5, 5, 20);
-				     }
-				     else {
-				    	 int [] xPoints= {(int)screenSize.getWidth()-365, (int)screenSize.getWidth()-365, (int)screenSize.getWidth()-350};
-				    	 int [] yPoints= {5,25,15};
-				    	 g.fillPolygon(xPoints, yPoints,3);
-				     }
-				}
-				  
-			  }
 		}
-	  
-	 
+	  	 
 	  /** 
 	   * [SizeAdjustmentListener.java]
 	   * @author Nicole Streltsov
@@ -560,11 +530,12 @@ class Explore extends JFrame{
 		 
 		 /** SizeAdjustmentListener *******************************************
 		     * constructor for adjustment listener
-		     * @param the size scroll bar
+		     * @param the scroll bar varaible
+		     * @param the starting value of the scroll bar
 		     */
-		 SizeAdjustmentListener (int previous, JScrollBar sizeControl){
+		 SizeAdjustmentListener (int startingValue, JScrollBar sizeControl){
 			 this.sizeControl=sizeControl;
-			 this.previous=previous;
+			 this.previous=startingValue;
 		 }
 		 /** getPrevious *******************************************
 		     * returns the previous value of the scroll bar
@@ -575,12 +546,14 @@ class Explore extends JFrame{
 		 }
 		 /** adjustmentValueChanged *******************************************
 		     * checks if the scroll bars size adjustement is changed
+		     * @param the adjustment event
 		     */
 		 public void adjustmentValueChanged(AdjustmentEvent e) {		
 			 int type = e.getAdjustmentType();			 
 			 if (type==AdjustmentEvent.TRACK) {
 				 int currentValue = sizeControl.getValue();
 				 previous=currentValue;
+				 //refresh for 3d panel if its on
 				 if (threeD) {
 					 tdpanel.refreshValues();
 				 }
@@ -593,14 +566,14 @@ class Explore extends JFrame{
 	   * The adjustment listener that regulates the speed of the solar system
 	   * January 2019
 	   */
-	  
 	  class SpeedAdjustmentListener implements AdjustmentListener {
 		  private int previous;
 		  private JScrollBar speedControl;
 		  
 		  /** SpeedAdjustmentListener *******************************************
 		     * constructor to initilize values
-		     * @param starting value integer and the scroll bar variable
+		     * @param starting value integer
+		     * @param the scroll bar variable
 		     */	
 		  SpeedAdjustmentListener(int startingValue, JScrollBar speedControl){
 			  this.previous=startingValue;
@@ -622,6 +595,7 @@ class Explore extends JFrame{
 			 if (type==AdjustmentEvent.TRACK) {
 				 int currentValue = speedControl.getValue();
 				 previous=currentValue;
+				//refresh for 3d panel if its on
 				 if (threeD) {
 					 tdpanel.refreshValues();
 				 }
@@ -636,13 +610,17 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	  class OrbitsCheckListener implements ActionListener{
+		  /** actionPerformed *******************************************
+		     * checks if the check box is checked off
+		     * @param the action event
+		     */		 
 		  public void actionPerformed(ActionEvent e) {
-			  JCheckBox checkBox=(JCheckBox) e.getSource();
+		    JCheckBox checkBox=(JCheckBox) e.getSource();
 			if (checkBox.isSelected()) {
-				orbits=true;
+				orbits=true; //put orbits
 			}
 			else {
-				orbits=false;
+				orbits=false;//take away orbits
 			}			
 		}
 	  }
@@ -653,13 +631,17 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	  class LabelCheckListener implements ActionListener{
+		  /** actionPerformed *******************************************
+		     * checks if the check box is checked off
+		     * @param the action event
+		     */	
 		  public void actionPerformed(ActionEvent e) {
 			  JCheckBox checkBox=(JCheckBox) e.getSource();
 			if (checkBox.isSelected()) {
-				label=true;
+				label=true; //put labels
 			}
 			else {
-				label=false;
+				label=false;//take away labels
 			}			
 		}
 	  }
@@ -670,16 +652,21 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	  class AxialCheckListener implements ActionListener{
+		  /** actionPerformed *******************************************
+		     * checks if the check box is checked off
+		     * @param the action event
+		     */	
 		  public void actionPerformed(ActionEvent e) {
-			  JCheckBox checkBox=(JCheckBox) e.getSource();
+			JCheckBox checkBox=(JCheckBox) e.getSource();
 			if (checkBox.isSelected()) {
-				axialTilt=true;
+				axialTilt=true;//put axial tilts
 			}
 			else {
-				axialTilt=false;
+				axialTilt=false; //take them away
 			}			
 		}
 	  }
+	  
 	  /** 
 	   * [OptionBoxListener.java]
 	   * @author Nicole Streltsov
@@ -687,27 +674,43 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	  class OptionBoxListener implements ActionListener{
+		  /** actionPerformed *******************************************
+		     * checks if the check box is checked off
+		     * @param the action event
+		     */	
 		  public void actionPerformed(ActionEvent e) {
 		      JComboBox <String> cb = (JComboBox<String>)e.getSource();
 		       String dimension = (String)cb.getSelectedItem();
+		       //remove old panel and replace with the new one (if there are changes)
 		       if (dimension.equals("Two-Dimensional")) {
 		    	   threeD=false;
 		    	   explore.getContentPane().removeAll();
 				   explore.getContentPane().add(solarSystem);
-				   explore.getContentPane().add(controlBar);	
-				   explore.revalidate();
+				   controlBar.getComponent(8).setVisible(true);
+				   controlBar.getComponent(9).setVisible(true);
+				   controlBar.getComponent(10).setVisible(true);
+				   planetDesc.setDisplay(true);
+				   explore.getContentPane().add(controlBar);
+				   explore.revalidate(); //must realine and repaint the frame
 				   explore.repaint();
+				   
 		       }
 		       else if(dimension.equals("Three-Dimensional")) {
 		    	   threeD=true;
 		    	   explore.getContentPane().removeAll();
 				   explore.getContentPane().add(tdpanel);
+				   controlBar.getComponent(8).setVisible(false);
+				   controlBar.getComponent(9).setVisible(false);
+				   controlBar.getComponent(10).setVisible(false);
+				   planetDesc.setDisplay(false);
 				   explore.getContentPane().add(controlBar);
 				   explore.revalidate();
 				   explore.repaint();
+				  
 		       }
 		    }
 	  }
+	  
 	  /** 
 	   * [MyKeyListener.java]
 	   * @author Nicole Streltsov
@@ -715,14 +718,21 @@ class Explore extends JFrame{
 	   * January 2019
 	   */
 	   private class MyKeyListener implements KeyListener {
-	  
+	     /** keyTyped *******************************************
+	       * checks if a key is typed
+	       * @param the key event
+	       */	
 	      public void keyTyped(KeyEvent e) {  
 	      }
-
+	      /** keyPressed *******************************************
+	       * checks if a key is pressed
+	       * @param the key event
+	       */	
 	      public void keyPressed(KeyEvent e) {
 	    	  if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 	    		  explore.dispose();
-	    		  System.exit(0);
+	    		  music.stop();
+	    		  new MainMenu();
 	    	  }
 	    	  else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
 	    		  backgroundX-=7;		    	    
@@ -741,24 +751,37 @@ class Explore extends JFrame{
 					 tdpanel.refreshValues();
 			  }
 	      }   
-	      
+	      /** keyReleased *******************************************
+	       * checks if a key is released
+	       * @param the key event
+	       */	
 	      public void keyReleased(KeyEvent e) {
 	      }
-	    } 	  
+	    } 
+	   
 	   /** 
-		   * [MyMouseListener.java]
-		   * @author Nicole Streltsov
-		   * The key listener that regulates inputs from the mouse
-		   * January 2019
-		   */
-	    private class MyMouseListener implements MouseListener {	    	
+	     * [MyMouseListener.java]
+	     * @author Nicole Streltsov
+	     * The key listener that regulates inputs from the mouse
+	     * January 2019
+	     */
+	    private class MyMouseListener implements MouseListener {	
+    	  /** mouseClicked *******************************************
+	        * checks if the mouse is clicked
+	        * @param the mouse event
+	        */
 	      public void mouseClicked(MouseEvent e) {
 	         
 	      }
+	      /** mousePressed *******************************************
+	        * checks if the mouse is pressed
+	        * @param the mouse event
+	        */
 	      public void mousePressed(MouseEvent e) {
+	    	  //bounds for sound and stop buttons:
 	    	  Rectangle sound=new Rectangle((int)screenSize.getWidth()-340,5, 30, 30);
 		      Rectangle stop=new Rectangle((int)screenSize.getWidth()-365, 5, 15, 15);
-	    	  //sound
+	    	  //----sound button-----
 	    	  if (sound.contains(e.getX(),e.getY()) && (on==true)){
 	    		  on=false;
 	    		  music.stop();
@@ -767,7 +790,7 @@ class Explore extends JFrame{
 	    		  on=true;
 	    		  music.start();
 	    	  }
-	    	  //stop
+	    	  //-----stop/ play button----
 	    	  if (stop.contains(e.getX(),e.getY()) && (play==true)){
 	    		  play=false;
 	    		 
@@ -775,23 +798,32 @@ class Explore extends JFrame{
 	    	  else if (stop.contains(e.getX(),e.getY()) && (play==false)){
 	    		  play=true;
 	    	  }
-	    	  //planets selection
+	    	  //---planets selection---- (check which one is selected)
 	    	  Iterator<SpaceObject> itr=spaceObjects.iterator();
 			  while (itr.hasNext()) {
 				   SpaceObject object = (SpaceObject)itr.next(); 
 				   ClickArea area= new ClickArea(object, sizeAdjust.getPrevious(),  backgroundX, backgroundY); 
-				   if (area.contains(e.getX(),e.getY())) {
+				   if (area.contains(e.getX(),e.getY())) { //check if cursor is in the click area
 					   planetDesc.setValues(false, object.getName());
 				   }
 			  }
 	      }
-
+	      /** mouseReleased *******************************************
+	        * checks if the mouse is released
+	        * @param the mouse event
+	        */
 	      public void mouseReleased(MouseEvent e) {
 	      }
-
+	      /** mouseEntered *******************************************
+	        * checks if the mouse has entered 
+	        * @param the mouse event
+	        */
 	      public void mouseEntered(MouseEvent e) {
 	      }
-
+	      /** mouseExited *******************************************
+	        * checks if the mouse has exited
+	        * @param the mouse event
+	        */
 	      public void mouseExited(MouseEvent e) {
 	      }
 	    } 

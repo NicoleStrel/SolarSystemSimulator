@@ -1,5 +1,4 @@
 //imports
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -28,11 +27,23 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+/** 
+* [MainMenu.java]
+*  @author Nicole Streltsov
+*  A class (Jframe) that has the starting screen of the simulation
+* January 2019
+*/
 class MainMenu extends JFrame{
+	//variables
 	private JFrame menu;
 	private Clip music;
 	public  static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	
+	/** MainMenu *******************************************
+	  * constructor for the main menu class and defines all its atributes
+	  */
 	MainMenu() {
+		//define features
 		super("Main Menu");
 	    this.menu = this; 
 	    this.setSize(750,499);    
@@ -81,7 +92,6 @@ class MainMenu extends JFrame{
         
 	    //--------audio--------
 	    File musicFile = new File("audio/intro.wav");
-	    
 	    try {
 	    	AudioInputStream audioIn = AudioSystem.getAudioInputStream(musicFile);
 	    	music = AudioSystem.getClip();
@@ -106,34 +116,71 @@ class MainMenu extends JFrame{
 	    soundButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 	    mainMenuPanel.add(soundButton);
 	    
+	    //finish off
 	    this.add(mainMenuPanel);	    
 	    this.setVisible(true);
 	}
-	 //inner class
-	 class StartButtonListener implements ActionListener{ 
-	    public void actionPerformed(ActionEvent event) {  
+	/** ---------------------------------------------- INNER CLASSES --------------------------------------------------- **/
+	
+	/** 
+	* [StartButtonListener.java]
+	* @author Nicole Streltsov
+	* The action listener for the start button
+	* January 2019
+	*/
+	class StartButtonListener implements ActionListener{ 
+		 /** actionPerformed *******************************************
+	     * checks if the button is pressed
+	     * @param the action event
+	     */	
+		public void actionPerformed(ActionEvent event) {  
 	      music.stop();
 	      menu.dispose();
-	      new Explore();
-
+	      new Explore(); //make the solar system frame
 	    }
 	  }
+	/** 
+	  * [QuitButtonListener.java]
+	  * @author Nicole Streltsov
+	  * The action listener for the quit button
+	  * January 2019
+	  */
 	 class QuitButtonListener implements ActionListener{
+		 /** actionPerformed *******************************************
+		     * checks if the button is pressed
+		     * @param the action event
+		     */	
 		 public void actionPerformed(ActionEvent event)  {  
 			 menu.dispose();
-			 System.exit(0);
+			 System.exit(0); //dispose of the program
 		 }
 	 }
+	 /** 
+	  * [SoundButtonListener.java]
+	  * @author Nicole Streltsov
+	  * The action listener for the sound button
+	  * January 2019
+	  */
 	 class SoundButtonListener implements ActionListener{
+		 //declare variables
 		 JButton soundButton;
 		 ImageIcon soundOn;
 		 ImageIcon soundOff;
+		 /** SoundButtonListener *******************************************
+		     * constructor for the sound button listener class
+		     * @param the sound button
+		     * @param the image of sound on
+		     * @param the image of sound off
+		     */	
 		 SoundButtonListener(JButton soundButton, ImageIcon soundOn, ImageIcon soundOff){
 			 this.soundButton=soundButton;
 			 this.soundOn=soundOn;
 			 this.soundOff=soundOff;
 		 }
-		 
+		 /** actionPerformed *******************************************
+		     * checks if the button is pressed
+		     * @param the action event
+		     */	
 		 public void actionPerformed(ActionEvent event) {
 			 if (soundButton.getIcon().equals(soundOn)) {
 				 soundButton.setIcon(soundOff);
@@ -145,17 +192,28 @@ class MainMenu extends JFrame{
 			 }
 		 }
 	 }
+	 /** 
+	  * [DecoratedPanel.java]
+	  * @author Nicole Streltsov
+	  * The Jpanel graphics panel for generating the logo
+	  * January 2019
+	  */
 	 private class DecoratedPanel extends JPanel {	
 		 private BufferedImage logo;
+		 /** DecoratedPanel *******************************************
+		     * constructor for the decorated panel
+		     */	
 		    DecoratedPanel() {
 		      this.setBackground(new Color(0,0,0,0));		      
 		    }
-		    
+		    /** paintComponent *******************************************
+		     * draws the logo on the graphics panel
+		     * @param the graphics component
+		     */	
 		    public void paintComponent(Graphics g) { 
 		        super.paintComponent(g);     
 		        Image background = new ImageIcon("images/space.jpg" ).getImage();
 		        g.drawImage(background,0,0,null); 
 		   }		  
-		   
 	 }
-}
+}//end of MainMenu class
