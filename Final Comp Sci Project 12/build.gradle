@@ -1,0 +1,56 @@
+apply plugin: 'java'
+apply plugin: 'java-library-distribution'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+            srcDir 'resources'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'lib/jogamp-java3d', include: '*.jar')
+    runtime fileTree(dir: 'lib/jogamp-fat', include: 'jogamp-fat.jar')
+}
+
+// Task "distZip" added by plugin "java-library-distribution":
+distZip.shouldRunAfter(build)
+
+jar {
+    // Keep jar clean:
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+
+    manifest {
+        attributes 'Main-Class': 'SolarOrbiter',
+                   'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+    }
+}
+
+distributions {
+    main {
+        contents {
+        	into('audio') {
+                from { 'audio' }
+            }
+            into('images') {
+                from { 'images' }
+            }
+            into('.') {
+            	from { '.' }
+            	include '*.txt'
+            }
+        }
+    }
+}
+
+task createWrapper(type: Wrapper){
+	gradleVersion = '5.1.1'
+}
